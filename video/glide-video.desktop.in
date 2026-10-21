@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Видео
+GenericName=Видеоплеер
+Comment=Лёгкий видеоплеер Glide с обрезкой и конвертацией
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-video %f
+Icon=glide-video
+Terminal=false
+StartupWMClass=glide-video
+Categories=AudioVideo;Video;Player;
+Keywords=видео;плеер;фильм;обрезать;конвертировать;video;player;
+MimeType=video/mp4;video/x-matroska;video/webm;video/quicktime;video/x-msvideo;video/x-ms-wmv;video/x-flv;video/mp2t;video/mpeg;video/3gpp;video/ogg;video/x-m4v;

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Документы PDF
+GenericName=Просмотр PDF
+Comment=Лёгкий просмотрщик PDF Glide
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-pdf %f
+Icon=glide-pdf
+Terminal=false
+StartupWMClass=glide-pdf
+Categories=Office;Viewer;
+Keywords=pdf;документ;книга;читать;document;viewer;
+MimeType=application/pdf;

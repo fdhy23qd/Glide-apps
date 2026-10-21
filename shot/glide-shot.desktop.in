@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Name=Скриншоты
+GenericName=Скриншот и разметка
+Comment=Снимок экрана со стрелками, текстом, размытием и обрезкой
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-shot %f
+Icon=glide-shot
+Terminal=false
+StartupWMClass=glide-shot
+Categories=Graphics;Utility;
+Keywords=скриншот;снимок;экран;стрелка;разметка;screenshot;annotate;
+MimeType=image/png;image/jpeg;image/webp;
+Actions=region;window;screen;
+
+[Desktop Action region]
+Name=Снять область
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-shot --capture region
+
+[Desktop Action window]
+Name=Снять окно
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-shot --capture window
+
+[Desktop Action screen]
+Name=Снять весь экран
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-shot --capture screen
