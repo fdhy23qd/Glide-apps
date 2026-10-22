@@ -14,6 +14,7 @@ on any Wayland compositor, but they are designed for niri. Without Glide Shell t
 | PDF | `glide-pdf` | PDF reader: search, outline, thumbnails, text selection, night mode |
 | Screenshots | `glide-shot` | Capture with niri's own UI and annotate: arrows, boxes, text, steps, blur |
 | Archives | `glide-archive` | Open, extract and create zip, 7z, rar, tar.* and more (libarchive) |
+| Disk Usage | `glide-disk` | What takes up space: a treemap coloured by file type and a sorted list; move to trash with undo |
 
 > The interface is in English and Russian, like Glide Shell (`lang` in its settings; without it — by `$LANG`).
 > They are a personal project, used daily on Arch Linux with niri.

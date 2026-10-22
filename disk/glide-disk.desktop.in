@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Disk Usage
+Name[ru]=Диск
+GenericName=Disk Usage Analyzer
+GenericName[ru]=Анализ места на диске
+Comment=See what takes up disk space and free it up
+Comment[ru]=Что занимает место на диске — и освободить его
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-disk %f
+Icon=glide-disk
+Terminal=false
+StartupWMClass=glide-disk
+Categories=Utility;System;Filesystem;
+Keywords=диск;место;размер;память;очистить;disk;usage;space;storage;
