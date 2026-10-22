@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Camera
+Name[ru]=Камера
+GenericName=Webcam
+GenericName[ru]=Веб-камера
+Comment=Take photos and videos with the webcam
+Comment[ru]=Фото и видео с веб-камеры
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-camera
+Icon=glide-camera
+Terminal=false
+StartupWMClass=glide-camera
+Categories=AudioVideo;Video;Recorder;
+Keywords=камера;вебка;фото;селфи;видео;camera;webcam;photo;selfie;
