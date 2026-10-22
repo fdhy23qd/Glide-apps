@@ -10,9 +10,11 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QSet>
 #include <QStandardPaths>
+#include <QStringDecoder>
 #include <QUrl>
 #include <algorithm>
 
@@ -152,4 +154,53 @@ void Playlist::showInFolder(const QString &path) const
                                                       "org.freedesktop.FileManager1", "ShowItems");
     msg << QStringList{QUrl::fromLocalFile(path).toString()} << QString();
     QDBusConnection::sessionBus().asyncCall(msg);
+}
+
+QVariantList Playlist::subtitleFiles(const QString &path) const
+{
+    const QFileInfo fi(path);
+    const QString base = fi.completeBaseName();
+    QVariantList out;
+    const QStringList names = QDir(fi.absolutePath()).entryList({"*.srt", "*.vtt", "*.SRT", "*.VTT"}, QDir::Files, QDir::Name);
+    for (const QString &n : names) {
+        if (!n.startsWith(base))
+            continue;
+        // «фильм.ru.srt» → «ru», «фильм.srt» → имя файла
+        QString label = n.mid(base.size()).section('.', 1, -2);
+        out.append(QVariantMap{{"file", fi.absolutePath() + '/' + n}, {"label", label.isEmpty() ? n : label}});
+    }
+    return out;
+}
+
+QVariantList Playlist::loadSubtitles(const QString &file) const
+{
+    QFile f(file);
+    if (!f.open(QIODevice::ReadOnly) || f.size() > 8 * 1024 * 1024)
+        return {};
+    QByteArray raw = f.readAll();
+    QString text = QString::fromUtf8(raw);
+    if (text.contains(QChar::ReplacementCharacter))   // не UTF-8 — чаще всего старые русские srt в cp1251
+        if (auto dec = QStringDecoder("windows-1251"); dec.isValid())
+            text = dec(raw);
+    text.replace("\r\n", "\n").replace('\r', '\n');
+    static const QRegularExpression timeRe(
+        R"((?:(\d+):)?(\d{1,2}):(\d{2})[,.](\d{3})\s*-->\s*(?:(\d+):)?(\d{1,2}):(\d{2})[,.](\d{3}))");
+    static const QRegularExpression tags(R"(<[^>]*>|\{\\[^}]*\})");
+    auto ms = [](const QRegularExpressionMatch &m, int i) {
+        return ((m.captured(i).toLongLong() * 60 + m.captured(i + 1).toLongLong()) * 60 + m.captured(i + 2).toLongLong()) * 1000
+               + m.captured(i + 3).toLongLong();
+    };
+    QVariantList out;
+    for (const QString &block : text.split(QRegularExpression("\n\\s*\n"), Qt::SkipEmptyParts)) {
+        QStringList lines = block.split('\n');
+        int i = 0;
+        while (i < lines.size() && !lines[i].contains("-->")) ++i;
+        if (i >= lines.size()) continue;
+        const auto m = timeRe.match(lines[i]);
+        if (!m.hasMatch()) continue;
+        QString t = lines.mid(i + 1).join('\n').remove(tags).trimmed();
+        if (!t.isEmpty())
+            out.append(QVariantMap{{"s", ms(m, 1)}, {"e", ms(m, 5)}, {"t", t}});
+    }
+    return out;
 }

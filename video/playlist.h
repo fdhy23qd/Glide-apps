@@ -2,6 +2,7 @@
 
 #include <QJsonObject>
 #include <QObject>
+#include <QVariantList>
 #include <QStringList>
 #include <QTimer>
 #include <QtQml/qqmlregistration.h>
@@ -40,6 +41,10 @@ public:
     Q_INVOKABLE qint64 resumePosition(const QString &path) const;
     Q_INVOKABLE void savePosition(const QString &path, qint64 positionMs, qint64 durationMs);
     Q_INVOKABLE void showInFolder(const QString &path) const;
+
+    // внешние субтитры рядом с видео: «имя*.srt|vtt» → [{file, label}]; разбор → [{s, e, t}] (мс, текст)
+    Q_INVOKABLE QVariantList subtitleFiles(const QString &path) const;
+    Q_INVOKABLE QVariantList loadSubtitles(const QString &file) const;
 
     static bool isMedia(const QString &name);
 

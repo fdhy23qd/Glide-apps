@@ -10,7 +10,7 @@ on any Wayland compositor, but they are designed for niri. Without Glide Shell t
 | App | Command | What it does |
 |---|---|---|
 | Photos | `glide-photos` | Image viewer with a folder grid, slideshow and editing: crop, rotate, resize, convert |
-| Video | `glide-video` | Video and audio player with a simple FFmpeg-based editor; MPRIS support |
+| Video | `glide-video` | Video and audio player with a simple FFmpeg-based editor; resume, .srt/.vtt subtitles next to the file, auto-play of the next file; MPRIS support |
 | PDF | `glide-pdf` | PDF reader: search, outline, thumbnails, text selection, night mode |
 | Screenshots | `glide-shot` | Capture with niri's own UI and annotate: arrows, boxes, text, steps, blur |
 | Archives | `glide-archive` | Open, extract and create zip, 7z, rar, tar.* and more (libarchive) |

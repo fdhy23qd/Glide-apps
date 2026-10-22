@@ -79,9 +79,43 @@ Window {
         ended = false
         if (!currentPath) { player.source = ""; return }
         conv.probe(currentPath)
+        extSubs = playlist.subtitleFiles(currentPath)
+        // файл субтитров рядом — включить сразу; из нескольких — на языке интерфейса
+        var lang = Tr.ru ? "ru" : "en", pref = extSubs.findIndex(x => x.label.toLowerCase().startsWith(lang))
+        pickExtSub(extSubs.length ? Math.max(0, pref) : -1)
         pendingResume = playlist.resumePosition(currentPath)
         player.source = playlist.url
     }
+    // ---- внешние субтитры (.srt/.vtt рядом с видео) ----
+    property var extSubs: []
+    property int extSub: -1
+    property var cues: []
+    function pickExtSub(i) {
+        extSub = i
+        cues = i >= 0 ? playlist.loadSubtitles(extSubs[i].file) : []
+        if (i >= 0) player.activeSubtitleTrack = -1
+    }
+    readonly property string cueText: {   // реплика под текущую позицию — двоичный поиск
+        var c = cues, t = player.position, lo = 0, hi = c.length - 1
+        while (lo <= hi) {
+            var mid = (lo + hi) >> 1
+            if (c[mid].e < t) lo = mid + 1
+            else if (c[mid].s > t) hi = mid - 1
+            else return c[mid].t
+        }
+        return ""
+    }
+
+    // ---- в конце — следующий файл папки через 5 с (можно отменить) ----
+    property int nextIn: 0
+    Timer {
+        id: autoNext
+        interval: 1000; repeat: true
+        onTriggered: if (--win.nextIn <= 0) { stop(); playlist.next() }
+    }
+    function cancelNext() { autoNext.stop(); nextIn = 0 }
+    onEndedChanged: if (ended && playlist.index < playlist.count - 1) { nextIn = 5; autoNext.restart() } else if (!ended) cancelNext()
+
     function toggle() {
         if (!hasMedia) return
         if (ended) { ended = false; player.position = 0; player.play() }
@@ -287,9 +321,28 @@ Window {
                 visible: playlist.index < playlist.count - 1
                 primary: true
                 glyph: 0xF04AD
-                text: Tr.t("Следующее")
+                text: win.nextIn > 0 ? Tr.t("Следующее через ") + win.nextIn + Tr.t(" с") : Tr.t("Следующее")
                 onClicked: playlist.next()
             }
+            TextButton { visible: win.nextIn > 0; text: Tr.t("Отмена"); onClicked: win.cancelNext() }
+        }
+
+        // внешние субтитры
+        Text {
+            visible: text !== "" && !win.ended
+            text: win.cueText
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: win.chrome ? 110 : 40
+            Behavior on anchors.bottomMargin { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            width: Math.min(implicitWidth, parent.width - 80)
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            textFormat: Text.PlainText
+            color: "#ffffff"   // поверх видео — всегда белый с обводкой
+            style: Text.Outline; styleColor: "#000000"
+            font.pixelSize: Math.max(18, Math.round(parent.height / 26))
+            font.weight: Font.DemiBold
         }
 
         // значок паузы/воспроизведения по щелчку
@@ -462,7 +515,7 @@ Window {
                             onClicked: { trackMenu.open = false; speedMenu.open = !speedMenu.open } }
             }
             IconButton {
-                visible: player.audioTracks.length > 1 || player.subtitleTracks.length > 0
+                visible: player.audioTracks.length > 1 || player.subtitleTracks.length > 0 || win.extSubs.length > 0
                 glyph: 0xF0A17; tip: Tr.t("Звук и субтитры"); tipAbove: true; on: trackMenu.open
                 onClicked: { speedMenu.open = false; trackMenu.open = !trackMenu.open }
             }
@@ -518,11 +571,16 @@ Window {
                 for (let i = 0; i < a.length; i++)
                     out.push({ text: trackName(a[i], i, Tr.t("Дорожка")), checked: player.activeAudioTrack === i, run: () => player.activeAudioTrack = i })
             }
-            if (s.length > 0) {
+            var x = win.extSubs
+            if (s.length > 0 || x.length > 0) {
                 out.push({ header: true, text: Tr.t("Субтитры") })
-                out.push({ text: Tr.t("Выключены"), checked: player.activeSubtitleTrack < 0, run: () => player.activeSubtitleTrack = -1 })
+                out.push({ text: Tr.t("Выключены"), checked: player.activeSubtitleTrack < 0 && win.extSub < 0,
+                           run: () => { player.activeSubtitleTrack = -1; win.pickExtSub(-1) } })
                 for (let j = 0; j < s.length; j++)
-                    out.push({ text: trackName(s[j], j, Tr.t("Субтитры")), checked: player.activeSubtitleTrack === j, run: () => player.activeSubtitleTrack = j })
+                    out.push({ text: trackName(s[j], j, Tr.t("Субтитры")), checked: player.activeSubtitleTrack === j,
+                               run: () => { win.pickExtSub(-1); player.activeSubtitleTrack = j } })
+                for (let k = 0; k < x.length; k++)
+                    out.push({ text: Tr.t("Файл: ") + x[k].label, checked: win.extSub === k, run: () => win.pickExtSub(k) })
             }
             return out
         }

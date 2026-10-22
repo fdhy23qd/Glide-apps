@@ -306,5 +306,7 @@
  "Не удалось сохранить кадр": "Couldn't save the frame",
  "Идёт видео": "Playing video",
  "Glide Видео": "Glide Video",
- "В папке нет видео": "No videos in the folder"
+ "В папке нет видео": "No videos in the folder",
+ "Следующее через ": "Next in ",
+ "Файл: ": "File: "
 }
