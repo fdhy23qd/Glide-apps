@@ -21,8 +21,8 @@ Rectangle {
         id: tabs
         x: 12; y: 10
         spacing: 6
-        Chip { text: "Оглавление"; visible: side.hasOutline; selected: side.tab === "outline"; onClicked: side.tab = "outline" }
-        Chip { text: "Страницы"; selected: side.tab === "pages"; onClicked: side.tab = "pages" }
+        Chip { text: Tr.t("Оглавление"); visible: side.hasOutline; selected: side.tab === "outline"; onClicked: side.tab = "outline" }
+        Chip { text: Tr.t("Страницы"); selected: side.tab === "pages"; onClicked: side.tab = "pages" }
     }
 
     // ---- оглавление ----

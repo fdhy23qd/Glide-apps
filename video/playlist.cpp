@@ -1,4 +1,5 @@
 #include "playlist.h"
+#include "glidetr.h"
 
 #include <QCollator>
 #include <QDBusConnection>
@@ -54,11 +55,11 @@ bool Playlist::open(const QString &pathOrUrl)
     const QString local = pathOrUrl.startsWith("file:") ? QUrl(pathOrUrl).toLocalFile() : pathOrUrl;
     const QFileInfo fi(local);
     if (!fi.exists()) {
-        emit error(QStringLiteral("Файл не найден: %1").arg(fi.fileName()));
+        emit error(glideTr(QStringLiteral("Файл не найден: %1")).arg(fi.fileName()));
         return false;
     }
     if (fi.isFile() && !isMedia(fi.fileName())) {
-        emit error(QStringLiteral("Формат «%1» не поддерживается").arg(fi.suffix()));
+        emit error(glideTr(QStringLiteral("Формат «%1» не поддерживается")).arg(fi.suffix()));
         return false;
     }
     m_folder = fi.isDir() ? fi.absoluteFilePath() : fi.absolutePath();
@@ -73,7 +74,7 @@ bool Playlist::open(const QString &pathOrUrl)
     emit listChanged();
     emit currentChanged();
     if (m_index < 0)
-        emit error(QStringLiteral("В папке нет видео"));
+        emit error(glideTr(QStringLiteral("В папке нет видео")));
     return m_index >= 0;
 }
 

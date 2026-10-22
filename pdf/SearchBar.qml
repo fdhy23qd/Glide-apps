@@ -35,7 +35,7 @@ Rectangle {
             id: field
             width: 300
             glyph: 0xF0349
-            placeholder: "Найти в документе"
+            placeholder: Tr.t("Найти в документе")
             onTextChanged: debounce.restart()
             // новый запрос — к первому совпадению, тот же — к следующему
             onAccepted: { debounce.stop(); if (bar.search.searchString !== text) bar.search.searchString = text; else bar.next() }
@@ -45,21 +45,21 @@ Rectangle {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             width: 110
-            text: !bar.search.searchString ? "" : bar.count === 0 ? "Не найдено"
-                  : (bar.search.currentResult + 1) + " из " + bar.count
+            text: !bar.search.searchString ? "" : bar.count === 0 ? Tr.t("Не найдено")
+                  : (bar.search.currentResult + 1) + Tr.t(" из ") + bar.count
             color: bar.search.searchString && bar.count === 0 ? Theme.error : Theme.textSecondary
             font.pixelSize: Theme.fs(13)
             font.features: ({ "tnum": 1 })
         }
-        IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0143; tip: "Предыдущее  Shift+Enter"; enabled: bar.count > 0; onClicked: bar.prev() }
-        IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0140; tip: "Следующее  Enter"; enabled: bar.count > 0; onClicked: bar.next() }
+        IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0143; tip: Tr.t("Предыдущее  Shift+Enter"); enabled: bar.count > 0; onClicked: bar.prev() }
+        IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0140; tip: Tr.t("Следующее  Enter"); enabled: bar.count > 0; onClicked: bar.next() }
     }
     IconButton {
         anchors.right: parent.right
         anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         glyph: 0xF0156
-        tip: "Закрыть  Esc"
+        tip: Tr.t("Закрыть  Esc")
         onClicked: bar.hide()
     }
 }

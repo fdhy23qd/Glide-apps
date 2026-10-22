@@ -1,8 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Видео
-GenericName=Видеоплеер
-Comment=Лёгкий видеоплеер Glide с обрезкой и конвертацией
+Name=Video
+Name[ru]=Видео
+GenericName=Video Player
+GenericName[ru]=Видеоплеер
+Comment=Lightweight Glide video player with trimming and conversion
+Comment[ru]=Лёгкий видеоплеер Glide с обрезкой и конвертацией
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-video %f
 Icon=glide-video
 Terminal=false

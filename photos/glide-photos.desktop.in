@@ -1,8 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Фото
-GenericName=Просмотр изображений
-Comment=Лёгкий просмотрщик фото Glide
+Name=Photos
+Name[ru]=Фото
+GenericName=Image Viewer
+GenericName[ru]=Просмотр изображений
+Comment=Lightweight Glide photo viewer
+Comment[ru]=Лёгкий просмотрщик фото Glide
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-photos %f
 Icon=glide-photos
 Terminal=false

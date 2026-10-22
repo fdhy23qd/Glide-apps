@@ -31,9 +31,9 @@ Rectangle {
         editor.save(o)
     }
     function sizeText(b) {
-        if (b < 1024) return b + " Б"
-        if (b < 1048576) return Math.round(b / 1024) + " КБ"
-        return (b / 1048576).toFixed(1).replace(".", ",") + " МБ"
+        if (b < 1024) return b + Tr.t(" Б")
+        if (b < 1048576) return Math.round(b / 1024) + Tr.t(" КБ")
+        return (b / 1048576).toFixed(1).replace(".", Tr.ru ? "," : ".") + Tr.t(" МБ")
     }
 
     // оценка размера — после того как перестали менять
@@ -76,19 +76,19 @@ Rectangle {
             spacing: 10
 
             Text {
-                text: "Правка"
+                text: Tr.t("Правка")
                 color: Theme.text
                 font.pixelSize: Theme.fs(16)
                 font.weight: Font.DemiBold
             }
 
-            Section { text: "ОБРЕЗКА" }
+            Section { text: Tr.t("ОБРЕЗКА") }
             Flow {
                 width: parent.width
                 spacing: 6
                 Repeater {
                     model: [
-                        { text: "Свободно", a: 0 }, { text: "Исходные", a: -1 }, { text: "1:1", a: 1 },
+                        { text: Tr.t("Свободно"), a: 0 }, { text: Tr.t("Исходные"), a: -1 }, { text: "1:1", a: 1 },
                         { text: "4:3", a: 4 / 3 }, { text: "3:4", a: 3 / 4 }, { text: "16:9", a: 16 / 9 }, { text: "9:16", a: 9 / 16 }
                     ]
                     delegate: Chip {
@@ -102,21 +102,21 @@ Rectangle {
             }
             TextButton {
                 implicitHeight: 32
-                text: "Без обрезки"
+                text: Tr.t("Без обрезки")
                 enabled: panel.view.cropped
                 onClicked: panel.view.resetCrop()
             }
 
-            Section { text: "ПОВОРОТ И ОТРАЖЕНИЕ" }
+            Section { text: Tr.t("ПОВОРОТ И ОТРАЖЕНИЕ") }
             Row {
                 spacing: 6
-                IconButton { flat: false; glyph: 0xF0465; tip: "Влево  Shift+R"; onClicked: panel.view.rotate = (panel.view.rotate + 270) % 360 }
-                IconButton { flat: false; glyph: 0xF0467; tip: "Вправо  R"; onClicked: panel.view.rotate = (panel.view.rotate + 90) % 360 }
-                IconButton { flat: false; glyph: 0xF0A0E; tip: "Отразить по горизонтали"; on: panel.view.flipH; onClicked: panel.view.flipH = !panel.view.flipH }
-                IconButton { flat: false; glyph: 0xF0A0F; tip: "Отразить по вертикали"; on: panel.view.flipV; onClicked: panel.view.flipV = !panel.view.flipV }
+                IconButton { flat: false; glyph: 0xF0465; tip: Tr.t("Влево  Shift+R"); onClicked: panel.view.rotate = (panel.view.rotate + 270) % 360 }
+                IconButton { flat: false; glyph: 0xF0467; tip: Tr.t("Вправо  R"); onClicked: panel.view.rotate = (panel.view.rotate + 90) % 360 }
+                IconButton { flat: false; glyph: 0xF0A0E; tip: Tr.t("Отразить по горизонтали"); on: panel.view.flipH; onClicked: panel.view.flipH = !panel.view.flipH }
+                IconButton { flat: false; glyph: 0xF0A0F; tip: Tr.t("Отразить по вертикали"); on: panel.view.flipV; onClicked: panel.view.flipV = !panel.view.flipV }
             }
 
-            Section { text: "РАЗМЕР (длинная сторона)" }
+            Section { text: Tr.t("РАЗМЕР (длинная сторона)") }
             Flow {
                 width: parent.width
                 spacing: 6
@@ -124,7 +124,7 @@ Rectangle {
                     model: [0, 3840, 2560, 1920, 1280, 800]
                     delegate: Chip {
                         required property int modelData
-                        text: modelData === 0 ? "Исходный" : modelData + " px"
+                        text: modelData === 0 ? Tr.t("Исходный") : modelData + " px"
                         selected: panel.longSide === modelData
                         enabled: modelData === 0 || modelData < panel.cropLong
                         onClicked: panel.longSide = modelData
@@ -132,12 +132,12 @@ Rectangle {
                 }
             }
 
-            Section { text: "ФОРМАТ" }
+            Section { text: Tr.t("ФОРМАТ") }
             Flow {
                 width: parent.width
                 spacing: 6
                 Repeater {
-                    model: [{ id: "same", text: "Как есть" }, { id: "jpg", text: "JPEG" }, { id: "png", text: "PNG" },
+                    model: [{ id: "same", text: Tr.t("Как есть") }, { id: "jpg", text: "JPEG" }, { id: "png", text: "PNG" },
                             { id: "webp", text: "WebP" }, { id: "avif", text: "AVIF" }, { id: "jxl", text: "JPEG XL" }]
                     delegate: Chip {
                         required property var modelData
@@ -148,7 +148,7 @@ Rectangle {
                 }
             }
 
-            Section { text: "КАЧЕСТВО"; visible: panel.lossy }
+            Section { text: Tr.t("КАЧЕСТВО"); visible: panel.lossy }
             Row {
                 visible: panel.lossy
                 width: parent.width
@@ -174,7 +174,7 @@ Rectangle {
             Text {
                 visible: panel.lossy
                 width: parent.width
-                text: "Меньше — легче файл. 80–90 — на глаз как оригинал."
+                text: Tr.t("Меньше — легче файл. 80–90 — на глаз как оригинал.")
                 color: Theme.textMuted
                 font.pixelSize: Theme.fs(11)
                 wrapMode: Text.Wrap
@@ -196,15 +196,15 @@ Rectangle {
             text: (panel.editor.outputSize.width > 0 ? panel.editor.outputSize.width + " × " + panel.editor.outputSize.height + "  ·  " : "")
                   + panel.ext.toUpperCase().replace("JPG", "JPEG").replace("JXL", "JPEG XL")
                   + (panel.editor.estimate > 0 ? "  ·  ≈ " + panel.sizeText(panel.editor.estimate) : "")
-                  + (panel.info.bytes ? "  (было " + panel.sizeText(panel.info.bytes) + ")" : "")
+                  + (panel.info.bytes ? Tr.t("  (было ") + panel.sizeText(panel.info.bytes) + ")" : "")
             color: Theme.textVariant
             font.pixelSize: Theme.fs(12)
             wrapMode: Text.Wrap
         }
         Text {
             width: parent.width
-            text: "Сведения EXIF (камера, место съёмки) в новый файл не попадают."
-                  + (panel.ext === "avif" || panel.ext === "jxl" ? " Открыть AVIF и JPEG XL в Фото можно после установки kimageformats." : "")
+            text: Tr.t("Сведения EXIF (камера, место съёмки) в новый файл не попадают.")
+                  + (panel.ext === "avif" || panel.ext === "jxl" ? Tr.t(" Открыть AVIF и JPEG XL в Фото можно после установки kimageformats.") : "")
             color: Theme.textMuted
             font.pixelSize: Theme.fs(11)
             wrapMode: Text.Wrap
@@ -213,13 +213,13 @@ Rectangle {
             width: parent.width
             primary: true
             glyph: 0xF0193
-            text: panel.editor.busy ? "Сохранение…" : "Сохранить копию"
+            text: panel.editor.busy ? Tr.t("Сохранение…") : Tr.t("Сохранить копию")
             enabled: !panel.editor.busy
             onClicked: panel.save("copy")
         }
         TextButton {
             width: parent.width
-            text: "Заменить оригинал"
+            text: Tr.t("Заменить оригинал")
             enabled: !panel.editor.busy
             onClicked: panel.save("replace")
         }

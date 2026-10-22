@@ -19,7 +19,7 @@ Window {
     visible: true
     flags: Qt.Window | Qt.FramelessWindowHint
     color: player.hasVideo ? "black" : Theme.background
-    title: playlist.count > 0 ? playlist.name + " — Видео" : "Видео"
+    title: playlist.count > 0 ? playlist.name + Tr.t(" — Видео") : Tr.t("Видео")
 
     readonly property bool fullscreen: visibility === Window.FullScreen
     function toggleFullscreen() { visibility = fullscreen ? Window.Windowed : Window.FullScreen }
@@ -34,9 +34,9 @@ Window {
     }
     function fmtFine(ms) { return fmt(ms) + "," + Math.floor(ms % 1000 / 100) }   // с десятыми — для обрезки
     function sizeText(b) {
-        if (b < 1048576) return Math.round(b / 1024) + " КБ"
-        if (b < 1073741824) return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace(".", ",") + " МБ"
-        return (b / 1073741824).toFixed(1).replace(".", ",") + " ГБ"
+        if (b < 1048576) return Math.round(b / 1024) + Tr.t(" КБ")
+        if (b < 1073741824) return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace(".", Tr.ru ? "," : ".") + Tr.t(" МБ")
+        return (b / 1073741824).toFixed(1).replace(".", Tr.ru ? "," : ".") + Tr.t(" ГБ")
     }
 
     Settings {
@@ -57,12 +57,12 @@ Window {
         onPicked: urls => { if (urls.length) playlist.open(urls[0]) }
     }
     function openDialog() {
-        picker.open("Открыть видео", "Видео и аудио",
+        picker.open(Tr.t("Открыть видео"), Tr.t("Видео и аудио"),
                     ["*.mp4", "*.m4v", "*.mkv", "*.webm", "*.mov", "*.avi", "*.wmv", "*.flv", "*.ts", "*.mpg",
                      "*.mpeg", "*.3gp", "*.ogv", "*.mp3", "*.flac", "*.ogg", "*.opus", "*.m4a", "*.wav"],
                     playlist.folder)
     }
-    Component.onCompleted: if (startPath) playlist.open(startPath)
+    Component.onCompleted: { Theme.forceDark = true; if (startPath) playlist.open(startPath) }   // плеер — всегда тёмный
 
     // ---------- воспроизведение ----------
     property string currentPath: ""
@@ -99,11 +99,11 @@ Window {
     function setVolume(v) {
         prefs.volume = Math.max(0, Math.min(1, v))
         prefs.muted = false
-        hint.show("Громкость " + Math.round(prefs.volume * 100) + "%")
+        hint.show(Tr.t("Громкость ") + Math.round(prefs.volume * 100) + "%")
     }
     function setRate(r) {
         player.playbackRate = Math.max(0.25, Math.min(4, Math.round(r * 100) / 100))
-        hint.show("Скорость ×" + String(player.playbackRate).replace(".", ","))
+        hint.show(Tr.t("Скорость ×") + String(player.playbackRate).replace(".", Tr.ru ? "," : "."))
     }
 
     MediaPlayer {
@@ -118,7 +118,7 @@ Window {
             if (mediaStatus === MediaPlayer.LoadedMedia) {
                 if (win.pendingResume > 0 && win.pendingResume < duration) {
                     position = win.pendingResume
-                    toast.show("Продолжено с " + win.fmt(win.pendingResume), "С начала", () => { player.position = 0 })
+                    toast.show(Tr.t("Продолжено с ") + win.fmt(win.pendingResume), Tr.t("С начала"), () => { player.position = 0 })
                 }
                 win.pendingResume = 0
                 play()
@@ -128,13 +128,13 @@ Window {
             }
         }
         onPlaybackStateChanged: if (playbackState !== MediaPlayer.PlayingState) win.savePosition()
-        onErrorOccurred: (error, errorString) => toast.show("Не удалось воспроизвести: " + errorString)
+        onErrorOccurred: (error, errorString) => toast.show(Tr.t("Не удалось воспроизвести: ") + errorString)
     }
     Timer { running: win.playing; interval: 10000; repeat: true; onTriggered: win.savePosition() }
     onClosing: close => {
         if (conv.running && !forceClose) {
             close.accepted = false
-            toast.show("Идёт сохранение — закрыть и прервать?", "Закрыть", () => { win.forceClose = true; win.close() })
+            toast.show(Tr.t("Идёт сохранение — закрыть и прервать?"), Tr.t("Закрыть"), () => { win.forceClose = true; win.close() })
             return
         }
         savePosition()
@@ -144,10 +144,10 @@ Window {
     Converter {
         id: conv
         onFinished: (ok, output, error) => {
-            if (ok) toast.show("Сохранено: " + output.split("/").pop(), "Показать", () => playlist.showInFolder(output))
-            else toast.show("Не удалось сохранить: " + error)
+            if (ok) toast.show(Tr.t("Сохранено: ") + output.split("/").pop(), Tr.t("Показать"), () => playlist.showInFolder(output))
+            else toast.show(Tr.t("Не удалось сохранить: ") + error)
         }
-        onSnapshotSaved: file => toast.show("Кадр сохранён", "Показать", () => playlist.showInFolder(file))
+        onSnapshotSaved: file => toast.show(Tr.t("Кадр сохранён"), Tr.t("Показать"), () => playlist.showInFolder(file))
         onFailed: error => toast.show(error)
     }
 
@@ -255,14 +255,14 @@ Window {
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Нет видео"
+                text: Tr.t("Нет видео")
                 color: Theme.text
                 font.pixelSize: Theme.fs(18)
                 font.weight: Font.DemiBold
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Перетащите файл в окно или откройте его"
+                text: Tr.t("Перетащите файл в окно или откройте его")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fs(13)
             }
@@ -271,7 +271,7 @@ Window {
                 anchors.horizontalCenter: parent.horizontalCenter
                 primary: true
                 glyph: 0xF0770
-                text: "Открыть…"
+                text: Tr.t("Открыть…")
                 enabled: !picker.busy
                 onClicked: win.openDialog()
             }
@@ -282,12 +282,12 @@ Window {
             anchors.centerIn: parent
             visible: win.ended && win.hasMedia
             spacing: 12
-            TextButton { glyph: 0xF0459; text: "Сначала"; onClicked: win.toggle() }
+            TextButton { glyph: 0xF0459; text: Tr.t("Сначала"); onClicked: win.toggle() }
             TextButton {
                 visible: playlist.index < playlist.count - 1
                 primary: true
                 glyph: 0xF04AD
-                text: "Следующее"
+                text: Tr.t("Следующее")
                 onClicked: playlist.next()
             }
         }
@@ -350,7 +350,7 @@ Window {
             spacing: 1
             Text {
                 width: parent.width
-                text: win.hasMedia ? playlist.name : "Видео"
+                text: win.hasMedia ? playlist.name : Tr.t("Видео")
                 color: Theme.text
                 font.pixelSize: Theme.fs(14)
                 font.weight: Font.DemiBold
@@ -360,7 +360,7 @@ Window {
             Text {
                 width: parent.width
                 visible: win.hasMedia && conv.info.ok === true
-                text: [playlist.count > 1 ? (playlist.index + 1) + " из " + playlist.count : "",
+                text: [playlist.count > 1 ? (playlist.index + 1) + Tr.t(" из ") + playlist.count : "",
                        conv.info.width ? conv.info.width + " × " + conv.info.height : "",
                        (conv.info.vcodec || conv.info.acodec || "").toUpperCase(),
                        conv.info.bytes ? win.sizeText(conv.info.bytes) : ""].filter(x => x).join("  ·  ")
@@ -381,10 +381,10 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 width: busyText.implicitWidth + 24; height: 30; radius: 15
                 color: Theme.accentSoft
-                Text { id: busyText; anchors.centerIn: parent; text: "Сохранение " + Math.round(conv.progress * 100) + "%"; color: Theme.text; font.pixelSize: Theme.fs(12) }
+                Text { id: busyText; anchors.centerIn: parent; text: Tr.t("Сохранение ") + Math.round(conv.progress * 100) + "%"; color: Theme.text; font.pixelSize: Theme.fs(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: edit.open = true }
             }
-            IconButton { glyph: 0xF0156; tip: "Закрыть  Ctrl+W"; onClicked: win.close() }
+            IconButton { glyph: 0xF0156; tip: Tr.t("Закрыть  Ctrl+W"); onClicked: win.close() }
         }
     }
 
@@ -424,9 +424,9 @@ Window {
             x: 12
             y: 58
             spacing: 2
-            IconButton { visible: playlist.count > 1; glyph: 0xF04AE; tip: "Предыдущее  P"; tipAbove: true; enabled: playlist.index > 0; onClicked: playlist.prev() }
-            IconButton { glyph: win.playing ? 0xF03E4 : 0xF040A; glyphSize: 22; tip: win.playing ? "Пауза  Пробел" : "Смотреть  Пробел"; tipAbove: true; onClicked: win.toggle() }
-            IconButton { visible: playlist.count > 1; glyph: 0xF04AD; tip: "Следующее  N"; tipAbove: true; enabled: playlist.index < playlist.count - 1; onClicked: playlist.next() }
+            IconButton { visible: playlist.count > 1; glyph: 0xF04AE; tip: Tr.t("Предыдущее  P"); tipAbove: true; enabled: playlist.index > 0; onClicked: playlist.prev() }
+            IconButton { glyph: win.playing ? 0xF03E4 : 0xF040A; glyphSize: 22; tip: win.playing ? Tr.t("Пауза  Пробел") : Tr.t("Смотреть  Пробел"); tipAbove: true; onClicked: win.toggle() }
+            IconButton { visible: playlist.count > 1; glyph: 0xF04AD; tip: Tr.t("Следующее  N"); tipAbove: true; enabled: playlist.index < playlist.count - 1; onClicked: playlist.next() }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 leftPadding: 8
@@ -453,7 +453,7 @@ Window {
                 Text {
                     Behavior on color { ColorAnimation { duration: 140 } }
                     anchors.centerIn: parent
-                    text: "×" + String(player.playbackRate).replace(".", ",")
+                    text: "×" + String(player.playbackRate).replace(".", Tr.ru ? "," : ".")
                     color: player.playbackRate !== 1 ? Theme.accent : Theme.textVariant
                     font.pixelSize: Theme.fs(13)
                     font.weight: Font.DemiBold
@@ -463,12 +463,12 @@ Window {
             }
             IconButton {
                 visible: player.audioTracks.length > 1 || player.subtitleTracks.length > 0
-                glyph: 0xF0A17; tip: "Звук и субтитры"; tipAbove: true; on: trackMenu.open
+                glyph: 0xF0A17; tip: Tr.t("Звук и субтитры"); tipAbove: true; on: trackMenu.open
                 onClicked: { speedMenu.open = false; trackMenu.open = !trackMenu.open }
             }
             IconButton {
                 glyph: prefs.muted || prefs.volume === 0 ? 0xF0581 : 0xF057E
-                tip: "Без звука  M"; tipAbove: true
+                tip: Tr.t("Без звука  M"); tipAbove: true
                 onClicked: prefs.muted = !prefs.muted
             }
             Slider {
@@ -478,8 +478,8 @@ Window {
                 onMoved: v => win.setVolume(v)
             }
             Item { width: 6; height: 1 }
-            IconButton { glyph: 0xF0190; tip: "Изменить и сохранить  E"; tipAbove: true; on: edit.open; onClicked: edit.open = !edit.open }
-            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: "Во весь экран  F"; tipAbove: true; onClicked: win.toggleFullscreen() }
+            IconButton { glyph: 0xF0190; tip: Tr.t("Изменить и сохранить  E"); tipAbove: true; on: edit.open; onClicked: edit.open = !edit.open }
+            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: Tr.t("Во весь экран  F"); tipAbove: true; onClicked: win.toggleFullscreen() }
         }
     }
 
@@ -496,7 +496,7 @@ Window {
         anchors.rightMargin: 200
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 56
-        items: [0.5, 0.75, 1, 1.25, 1.5, 2].map(r => ({ text: "×" + String(r).replace(".", ",") + (r === 1 ? " — обычная" : ""),
+        items: [0.5, 0.75, 1, 1.25, 1.5, 2].map(r => ({ text: "×" + String(r).replace(".", Tr.ru ? "," : ".") + (r === 1 ? Tr.t(" — обычная") : ""),
                                                        checked: player.playbackRate === r, run: () => win.setRate(r) }))
     }
     PopupMenu {
@@ -514,15 +514,15 @@ Window {
             var out = []
             var a = player.audioTracks, s = player.subtitleTracks
             if (a.length > 1) {
-                out.push({ header: true, text: "Звук" })
+                out.push({ header: true, text: Tr.t("Звук") })
                 for (let i = 0; i < a.length; i++)
-                    out.push({ text: trackName(a[i], i, "Дорожка"), checked: player.activeAudioTrack === i, run: () => player.activeAudioTrack = i })
+                    out.push({ text: trackName(a[i], i, Tr.t("Дорожка")), checked: player.activeAudioTrack === i, run: () => player.activeAudioTrack = i })
             }
             if (s.length > 0) {
-                out.push({ header: true, text: "Субтитры" })
-                out.push({ text: "Выключены", checked: player.activeSubtitleTrack < 0, run: () => player.activeSubtitleTrack = -1 })
+                out.push({ header: true, text: Tr.t("Субтитры") })
+                out.push({ text: Tr.t("Выключены"), checked: player.activeSubtitleTrack < 0, run: () => player.activeSubtitleTrack = -1 })
                 for (let j = 0; j < s.length; j++)
-                    out.push({ text: trackName(s[j], j, "Субтитры"), checked: player.activeSubtitleTrack === j, run: () => player.activeSubtitleTrack = j })
+                    out.push({ text: trackName(s[j], j, Tr.t("Субтитры")), checked: player.activeSubtitleTrack === j, run: () => player.activeSubtitleTrack = j })
             }
             return out
         }
@@ -567,7 +567,7 @@ Window {
     Shortcut { sequence: "Home"; onActivated: { win.ended = false; player.position = 0 } }
     Shortcut { sequence: "Up"; onActivated: win.setVolume(prefs.volume + 0.05) }
     Shortcut { sequence: "Down"; onActivated: win.setVolume(prefs.volume - 0.05) }
-    Shortcut { sequence: "M"; onActivated: { prefs.muted = !prefs.muted; hint.show(prefs.muted ? "Без звука" : "Звук включён") } }
+    Shortcut { sequence: "M"; onActivated: { prefs.muted = !prefs.muted; hint.show(prefs.muted ? Tr.t("Без звука") : Tr.t("Звук включён")) } }
     Shortcut { sequence: "]"; onActivated: win.setRate(player.playbackRate + 0.25) }
     Shortcut { sequence: "["; onActivated: win.setRate(player.playbackRate - 0.25) }
     Shortcut { sequence: "Backspace"; onActivated: win.setRate(1) }

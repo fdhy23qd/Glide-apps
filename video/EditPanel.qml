@@ -89,7 +89,7 @@ Rectangle {
                 Text {
                     width: parent.width - 32
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Изменить и сохранить"
+                    text: Tr.t("Изменить и сохранить")
                     color: Theme.text
                     font.pixelSize: Theme.fs(16)
                     font.weight: Font.DemiBold
@@ -98,11 +98,11 @@ Rectangle {
             }
 
             // ---- фрагмент ----
-            Section { text: "ФРАГМЕНТ" }
+            Section { text: Tr.t("ФРАГМЕНТ") }
             Repeater {
                 model: [
-                    { label: "Начало", value: panel.trimStart, set: () => panel.setStart(panel.position), clear: () => panel.trimStart = 0 },
-                    { label: "Конец", value: panel.trimEnd, set: () => panel.setEnd(panel.position), clear: () => panel.trimEnd = 0 }
+                    { label: Tr.t("Начало"), value: panel.trimStart, set: () => panel.setStart(panel.position), clear: () => panel.trimStart = 0 },
+                    { label: Tr.t("Конец"), value: panel.trimEnd, set: () => panel.setEnd(panel.position), clear: () => panel.trimEnd = 0 }
                 ]
                 delegate: Row {
                     required property var modelData
@@ -118,31 +118,31 @@ Rectangle {
                     Text {
                         width: content.width - 64 - 8 - setBtn.width - 8 - 32
                         anchors.verticalCenter: parent.verticalCenter
-                        text: modelData.value > 0 ? panel.format(modelData.value) : (modelData.label === "Начало" ? "с начала" : "до конца")
+                        text: modelData.value > 0 ? panel.format(modelData.value) : (modelData.label === Tr.t("Начало") ? Tr.t("с начала") : Tr.t("до конца"))
                         color: modelData.value > 0 ? Theme.warning : Theme.textMuted
                         font.pixelSize: Theme.fs(13)
                         font.features: ({ "tnum": 1 })
                     }
-                    TextButton { id: setBtn; implicitHeight: 32; text: "Сейчас"; onClicked: modelData.set() }
+                    TextButton { id: setBtn; implicitHeight: 32; text: Tr.t("Сейчас"); onClicked: modelData.set() }
                     IconButton { width: 32; height: 32; glyphSize: 14; glyph: 0xF0156; enabled: modelData.value > 0; onClicked: modelData.clear() }
                 }
             }
             Text {
                 width: parent.width
-                text: "Клавиши I и O — начало и конец в текущей точке"
+                text: Tr.t("Клавиши I и O — начало и конец в текущей точке")
                 color: Theme.textMuted
                 font.pixelSize: Theme.fs(11)
                 wrapMode: Text.Wrap
             }
 
             // ---- формат ----
-            Section { text: "ФОРМАТ" }
+            Section { text: Tr.t("ФОРМАТ") }
             Flow {
                 width: parent.width
                 spacing: 6
                 Repeater {
                     model: [
-                        { id: "same", text: "Как есть", video: true, audio: true },
+                        { id: "same", text: Tr.t("Как есть"), video: true, audio: true },
                         { id: "mp4", text: "MP4", video: true }, { id: "webm", text: "WebM", video: true },
                         { id: "mkv", text: "MKV", video: true }, { id: "gif", text: "GIF", video: true },
                         { id: "webp", text: "WebP", video: true },
@@ -161,18 +161,18 @@ Rectangle {
             }
 
             // ---- качество ----
-            Section { text: "КАЧЕСТВО" }
+            Section { text: Tr.t("КАЧЕСТВО") }
             Flow {
                 width: parent.width
                 spacing: 6
-                Chip { text: "Без перекодирования"; selected: panel.quality === "copy"; enabled: panel.copyOk; onClicked: panel.quality = "copy" }
-                Chip { text: "Высокое"; selected: panel.quality === "high"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "high" }
-                Chip { text: "Среднее"; selected: panel.quality === "medium"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "medium" }
-                Chip { text: "Маленький файл"; selected: panel.quality === "small"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "small" }
+                Chip { text: Tr.t("Без перекодирования"); selected: panel.quality === "copy"; enabled: panel.copyOk; onClicked: panel.quality = "copy" }
+                Chip { text: Tr.t("Высокое"); selected: panel.quality === "high"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "high" }
+                Chip { text: Tr.t("Среднее"); selected: panel.quality === "medium"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "medium" }
+                Chip { text: Tr.t("Маленький файл"); selected: panel.quality === "small"; enabled: panel.fmt !== "wav" && panel.fmt !== "flac"; onClicked: panel.quality = "small" }
             }
 
             // ---- размер ----
-            Section { text: "РАЗМЕР"; visible: panel.hasVideo && !panel.audioFormat }
+            Section { text: Tr.t("РАЗМЕР"); visible: panel.hasVideo && !panel.audioFormat }
             Flow {
                 visible: panel.hasVideo && !panel.audioFormat
                 width: parent.width
@@ -181,7 +181,7 @@ Rectangle {
                     model: [0, 1080, 720, 480, 360]
                     delegate: Chip {
                         required property int modelData
-                        text: modelData === 0 ? (panel.animFormat ? "Авто" : "Исходный") : modelData + "p"
+                        text: modelData === 0 ? (panel.animFormat ? Tr.t("Авто") : Tr.t("Исходный")) : modelData + "p"
                         selected: panel.height_ === modelData
                         enabled: modelData === 0 || modelData < panel.shortSide
                         onClicked: {
@@ -193,11 +193,11 @@ Rectangle {
             }
 
             // ---- ещё ----
-            Section { text: "ЕЩЁ"; visible: panel.hasVideo && !panel.audioFormat }
+            Section { text: Tr.t("ЕЩЁ"); visible: panel.hasVideo && !panel.audioFormat }
             Toggle {
                 visible: panel.hasVideo && !panel.audioFormat && !panel.animFormat
                 width: parent.width
-                text: "Без звука"
+                text: Tr.t("Без звука")
                 enabled: panel.hasAudio
                 checked: panel.mute
                 onToggled: on => panel.mute = on
@@ -208,7 +208,7 @@ Rectangle {
                 Text {
                     width: parent.width - rotBtn.width
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Повернуть"
+                    text: Tr.t("Повернуть")
                     color: Theme.text
                     font.pixelSize: Theme.fs(13)
                 }
@@ -247,10 +247,10 @@ Rectangle {
         Text {
             width: parent.width
             text: panel.quality === "copy"
-                  ? "Без перекодирования — за секунды, качество не меняется."
-                    + (panel.trimStart > 0 ? " Начало фрагмента сдвинется к ключевому кадру — бывает на несколько секунд раньше." : "")
-                  : "Кодирование: " + (panel.converter.hardware && !panel.animFormat && !panel.audioFormat && panel.fmt !== "webm"
-                                       ? "видеокарта (" + panel.converter.hardware + ")" : "процессор")
+                  ? Tr.t("Без перекодирования — за секунды, качество не меняется.")
+                    + (panel.trimStart > 0 ? Tr.t(" Начало фрагмента сдвинется к ключевому кадру — бывает на несколько секунд раньше.") : "")
+                  : Tr.t("Кодирование: ") + (panel.converter.hardware && !panel.animFormat && !panel.audioFormat && panel.fmt !== "webm"
+                                       ? Tr.t("видеокарта (") + panel.converter.hardware + ")" : Tr.t("процессор"))
             color: Theme.textMuted
             font.pixelSize: Theme.fs(11)
             wrapMode: Text.Wrap
@@ -277,14 +277,14 @@ Rectangle {
                     width: parent.width - cancelBtn.width
                     anchors.verticalCenter: parent.verticalCenter
                     text: Math.round(panel.converter.progress * 100) + "%"
-                          + (panel.converter.speed > 0 ? "  ·  ×" + panel.converter.speed.toFixed(1).replace(".", ",") : "")
-                          + (panel.converter.eta >= 0 ? "  ·  осталось " + (panel.converter.eta < 60 ? panel.converter.eta + " с"
-                                 : Math.floor(panel.converter.eta / 60) + " мин " + panel.converter.eta % 60 + " с") : "")
+                          + (panel.converter.speed > 0 ? "  ·  ×" + panel.converter.speed.toFixed(1).replace(".", Tr.ru ? "," : ".") : "")
+                          + (panel.converter.eta >= 0 ? Tr.t("  ·  осталось ") + (panel.converter.eta < 60 ? panel.converter.eta + Tr.t(" с")
+                                 : Math.floor(panel.converter.eta / 60) + Tr.t(" мин ") + panel.converter.eta % 60 + Tr.t(" с")) : "")
                     color: Theme.textVariant
                     font.pixelSize: Theme.fs(12)
                     font.features: ({ "tnum": 1 })
                 }
-                TextButton { id: cancelBtn; implicitHeight: 32; text: "Отмена"; onClicked: panel.converter.cancel() }
+                TextButton { id: cancelBtn; implicitHeight: 32; text: Tr.t("Отмена"); onClicked: panel.converter.cancel() }
             }
         }
         TextButton {
@@ -292,14 +292,14 @@ Rectangle {
             width: parent.width
             primary: true
             glyph: 0xF0193
-            text: "Сохранить"
+            text: Tr.t("Сохранить")
             enabled: panel.info.ok === true
             onClicked: panel.save()
         }
         TextButton {
             width: parent.width
             glyph: 0xF0100
-            text: "Сохранить кадр (PNG)"
+            text: Tr.t("Сохранить кадр (PNG)")
             enabled: panel.hasVideo
             onClicked: panel.converter.snapshot(panel.path, panel.position)
         }

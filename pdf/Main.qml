@@ -36,7 +36,7 @@ Window {
         id: picker
         onPicked: urls => { if (urls.length) win.openFile(urls[0]) }
     }
-    function openDialog() { picker.open("Открыть PDF", "Документы PDF", ["*.pdf"], path ? lib.fileInfo(path).folder : "") }
+    function openDialog() { picker.open(Tr.t("Открыть PDF"), Tr.t("Документы PDF"), ["*.pdf"], path ? lib.fileInfo(path).folder : "") }
 
     // ---------- документ ----------
     property string path: ""
@@ -49,7 +49,7 @@ Window {
         savePosition()
         var local = lib.localPath(p)
         if (!local) return
-        if (!lib.fileInfo(local).exists) { toast.show("Файл не найден: " + local.split("/").pop()); return }
+        if (!lib.fileInfo(local).exists) { toast.show(Tr.t("Файл не найден: ") + local.split("/").pop()); return }
         needPassword = false
         wrongPassword = false
         restored = false
@@ -122,7 +122,7 @@ Window {
     }
     function setZoom(z, mode) {
         keepPlace(() => { win.fit = mode || "none"; win.zoom = Math.max(0.1, Math.min(8, z)) })
-        hint.show(mode === "width" ? "По ширине" : mode === "page" ? "Страница целиком" : percent + "%")
+        hint.show(mode === "width" ? Tr.t("По ширине") : mode === "page" ? Tr.t("Страница целиком") : percent + "%")
     }
     function zoomBy(k) { setZoom(zoom * k) }
     function refit() { if (fit !== "none" && ready) keepPlace(() => { win.zoom = win.fitZoom(win.fit) }) }
@@ -176,7 +176,7 @@ Window {
     }
     function openExternal(url) {
         if (/^(https?:|mailto:)/i.test(url)) Qt.openUrlExternally(url)
-        else toast.show("Такие ссылки не открываю: " + url)   // file:, javascript: и прочее — небезопасно
+        else toast.show(Tr.t("Такие ссылки не открываю: ") + url)   // file:, javascript: и прочее — небезопасно
     }
 
     // ---------- место чтения ----------
@@ -198,7 +198,7 @@ Window {
             goToPage(p.page || 0, false)
             var it = pages.itemAtIndex(p.page || 0)
             if (it) { pages.contentY = it.y + (p.offset || 0) * it.height; pages.returnToBounds() }
-            if (p.page > 0) toast.show("Продолжено со страницы " + (p.page + 1), "С начала", () => win.goToPage(0, false))
+            if (p.page > 0) toast.show(Tr.t("Продолжено со страницы ") + (p.page + 1), Tr.t("С начала"), () => win.goToPage(0, false))
         } else {
             pages.positionViewAtBeginning()
         }
@@ -243,7 +243,7 @@ Window {
     }
     property var lastOwner: null
     function copySelection() {
-        if (selectionOwner && selectionOwner.text) { selectionOwner.copyToClipboard(); toast.show("Текст скопирован") }
+        if (selectionOwner && selectionOwner.text) { selectionOwner.copyToClipboard(); toast.show(Tr.t("Текст скопирован")) }
     }
     function selectAllOnPage() {
         var it = pages.itemAtIndex(currentPage)
@@ -267,8 +267,8 @@ Window {
             x: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
-            IconButton { glyph: 0xF0836; tip: "Оглавление и страницы  F9"; on: sidebar.open; enabled: win.ready; onClicked: prefs.sidebar = !prefs.sidebar }
-            IconButton { visible: win.history.length > 0; glyph: 0xF004D; tip: "Назад  Alt+←"; onClicked: win.back() }
+            IconButton { glyph: 0xF0836; tip: Tr.t("Оглавление и страницы  F9"); on: sidebar.open; enabled: win.ready; onClicked: prefs.sidebar = !prefs.sidebar }
+            IconButton { visible: win.history.length > 0; glyph: 0xF004D; tip: Tr.t("Назад  Alt+←"); onClicked: win.back() }
         }
         Column {
             anchors.left: left.right
@@ -316,12 +316,12 @@ Window {
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "из " + doc.pageCount
+                text: Tr.t("из ") + doc.pageCount
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fs(13)
                 rightPadding: 10
             }
-            IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF06EC; tip: "Уменьшить  Ctrl+−"; onClicked: win.zoomBy(1 / 1.2) }
+            IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF06EC; tip: Tr.t("Уменьшить  Ctrl+−"); onClicked: win.zoomBy(1 / 1.2) }
             Rectangle {
                 id: zoomBtn
                 Behavior on color { ColorAnimation { duration: 140 } }
@@ -340,7 +340,7 @@ Window {
                 MouseArea { id: zoomArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                             onClicked: { moreMenu.open = false; zoomMenu.open = !zoomMenu.open } }
             }
-            IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF06ED; tip: "Увеличить  Ctrl++"; onClicked: win.zoomBy(1.2) }
+            IconButton { anchors.verticalCenter: parent.verticalCenter; glyph: 0xF06ED; tip: Tr.t("Увеличить  Ctrl++"); onClicked: win.zoomBy(1.2) }
         }
 
         Row {
@@ -350,12 +350,12 @@ Window {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
             readonly property bool wide: win.width > 820
-            IconButton { glyph: 0xF0349; tip: "Найти  Ctrl+F"; on: searchBar.open; enabled: win.ready; onClicked: searchBar.open ? searchBar.hide() : searchBar.show() }
-            IconButton { visible: right.wide; glyph: prefs.night ? 0xF0599 : 0xF0594; tip: prefs.night ? "Дневной режим  D" : "Ночной режим  D"; on: prefs.night; onClicked: prefs.night = !prefs.night }
-            IconButton { visible: right.wide; glyph: 0xF0467; tip: "Повернуть  R"; enabled: win.ready; onClicked: win.rotate() }
-            IconButton { id: moreBtn; glyph: 0xF01D9; tip: "Ещё"; on: moreMenu.open; onClicked: { zoomMenu.open = false; moreMenu.open = !moreMenu.open } }
-            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: "Во весь экран  F11"; onClicked: win.toggleFullscreen() }
-            IconButton { glyph: 0xF0156; tip: "Закрыть  Ctrl+W"; onClicked: win.close() }
+            IconButton { glyph: 0xF0349; tip: Tr.t("Найти  Ctrl+F"); on: searchBar.open; enabled: win.ready; onClicked: searchBar.open ? searchBar.hide() : searchBar.show() }
+            IconButton { visible: right.wide; glyph: prefs.night ? 0xF0599 : 0xF0594; tip: prefs.night ? Tr.t("Дневной режим  D") : Tr.t("Ночной режим  D"); on: prefs.night; onClicked: prefs.night = !prefs.night }
+            IconButton { visible: right.wide; glyph: 0xF0467; tip: Tr.t("Повернуть  R"); enabled: win.ready; onClicked: win.rotate() }
+            IconButton { id: moreBtn; glyph: 0xF01D9; tip: Tr.t("Ещё"); on: moreMenu.open; onClicked: { zoomMenu.open = false; moreMenu.open = !moreMenu.open } }
+            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: Tr.t("Во весь экран  F11"); onClicked: win.toggleFullscreen() }
+            IconButton { glyph: 0xF0156; tip: Tr.t("Закрыть  Ctrl+W"); onClicked: win.close() }
         }
     }
 
@@ -459,7 +459,7 @@ Window {
             radius: 13
             color: Theme.surfaceHigh
             border.color: Theme.outline
-            Text { id: bubbleText; anchors.centerIn: parent; text: (win.currentPage + 1) + " из " + doc.pageCount; color: Theme.text; font.pixelSize: Theme.fs(12); font.features: ({ "tnum": 1 }) }
+            Text { id: bubbleText; anchors.centerIn: parent; text: (win.currentPage + 1) + Tr.t(" из ") + doc.pageCount; color: Theme.text; font.pixelSize: Theme.fs(12); font.features: ({ "tnum": 1 }) }
         }
     }
 
@@ -499,10 +499,10 @@ Window {
         visible: !win.path
         spacing: 14
         Text { anchors.horizontalCenter: parent.horizontalCenter; text: Theme.icon(0xF0219); color: Theme.textMuted; font.family: Theme.iconFont; font.pixelSize: 64 }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Нет документа"; color: Theme.text; font.pixelSize: Theme.fs(18); font.weight: Font.DemiBold }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Перетащите PDF в окно или откройте файл"; color: Theme.textSecondary; font.pixelSize: Theme.fs(13) }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Tr.t("Нет документа"); color: Theme.text; font.pixelSize: Theme.fs(18); font.weight: Font.DemiBold }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Tr.t("Перетащите PDF в окно или откройте файл"); color: Theme.textSecondary; font.pixelSize: Theme.fs(13) }
         Item { width: 1; height: 4 }
-        TextButton { anchors.horizontalCenter: parent.horizontalCenter; primary: true; glyph: 0xF0770; text: "Открыть…"; enabled: !picker.busy; onClicked: win.openDialog() }
+        TextButton { anchors.horizontalCenter: parent.horizontalCenter; primary: true; glyph: 0xF0770; text: Tr.t("Открыть…"); enabled: !picker.busy; onClicked: win.openDialog() }
     }
     Rectangle {
         anchors.centerIn: parent
@@ -518,26 +518,26 @@ Window {
             width: parent.width - 48
             spacing: 12
             Text { text: Theme.icon(0xF033E); color: Theme.accent; font.family: Theme.iconFont; font.pixelSize: 32 }
-            Text { text: "Документ защищён паролем"; color: Theme.text; font.pixelSize: Theme.fs(16); font.weight: Font.DemiBold }
+            Text { text: Tr.t("Документ защищён паролем"); color: Theme.text; font.pixelSize: Theme.fs(16); font.weight: Font.DemiBold }
             TextField {
                 id: passwordField
                 width: parent.width
                 password: true
-                placeholder: "Пароль"
+                placeholder: Tr.t("Пароль")
                 error: win.wrongPassword
                 onAccepted: doc.password = text
                 onTextChanged: win.wrongPassword = false
             }
-            Text { visible: win.wrongPassword; text: "Неверный пароль"; color: Theme.error; font.pixelSize: Theme.fs(12) }
-            TextButton { width: parent.width; primary: true; text: "Открыть"; enabled: passwordField.text !== ""; onClicked: doc.password = passwordField.text }
+            Text { visible: win.wrongPassword; text: Tr.t("Неверный пароль"); color: Theme.error; font.pixelSize: Theme.fs(12) }
+            TextButton { width: parent.width; primary: true; text: Tr.t("Открыть"); enabled: passwordField.text !== ""; onClicked: doc.password = passwordField.text }
         }
     }
     Column {
         anchors.centerIn: parent
         visible: win.path !== "" && doc.status === PdfDocument.Error && !win.needPassword
         spacing: 10
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Не удалось открыть документ"; color: Theme.text; font.pixelSize: Theme.fs(16) }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Файл повреждён или это не PDF"; color: Theme.textSecondary; font.pixelSize: Theme.fs(13) }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Tr.t("Не удалось открыть документ"); color: Theme.text; font.pixelSize: Theme.fs(16) }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Tr.t("Файл повреждён или это не PDF"); color: Theme.textSecondary; font.pixelSize: Theme.fs(13) }
     }
 
     // ---------- меню ----------
@@ -553,8 +553,8 @@ Window {
         x: Math.min(parent.width - width - 8, center.x + zoomBtn.x + zoomBtn.width - width + 40)
         y: 50
         items: [
-            { text: "По ширине", checked: win.fit === "width", run: () => win.setZoom(win.fitZoom("width"), "width") },
-            { text: "Страница целиком", checked: win.fit === "page", run: () => win.setZoom(win.fitZoom("page"), "page") }
+            { text: Tr.t("По ширине"), checked: win.fit === "width", run: () => win.setZoom(win.fitZoom("width"), "width") },
+            { text: Tr.t("Страница целиком"), checked: win.fit === "page", run: () => win.setZoom(win.fitZoom("page"), "page") }
         ].concat([50, 75, 100, 125, 150, 200, 300].map(p => ({
             text: p + "%", checked: win.fit === "none" && win.percent === p, run: () => win.setZoom(p / 100 * 96 / 72)
         })))
@@ -566,12 +566,12 @@ Window {
         x: parent.width - width - 8
         y: 50
         items: [
-            { text: "Сведения о документе", run: () => docInfo.open = true },
-            { text: "Копировать выделенный текст   Ctrl+C", run: () => win.copySelection() },
-            { text: "Показать в папке", run: () => lib.showInFolder(win.path) },
-            { text: (prefs.night ? "Дневной" : "Ночной") + " режим   D", run: () => prefs.night = !prefs.night },
-            { text: "Повернуть   R", run: () => win.rotate() },
-            { text: "Открыть…   Ctrl+O", run: () => win.openDialog() }
+            { text: Tr.t("Сведения о документе"), run: () => docInfo.open = true },
+            { text: Tr.t("Копировать выделенный текст   Ctrl+C"), run: () => win.copySelection() },
+            { text: Tr.t("Показать в папке"), run: () => lib.showInFolder(win.path) },
+            { text: (prefs.night ? Tr.t("Дневной") : Tr.t("Ночной")) + Tr.t(" режим   D"), run: () => prefs.night = !prefs.night },
+            { text: Tr.t("Повернуть   R"), run: () => win.rotate() },
+            { text: Tr.t("Открыть…   Ctrl+O"), run: () => win.openDialog() }
         ]
     }
     Rectangle {   // сведения о документе
@@ -588,16 +588,16 @@ Window {
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 140 } }
         MouseArea { anchors.fill: parent }
-        function date(d) { return d && !isNaN(d) ? Qt.locale("ru_RU").toString(d, "d MMMM yyyy, HH:mm") : "" }
+        function date(d) { return d && !isNaN(d) ? Tr.locale.toString(d, "d MMMM yyyy, HH:mm") : "" }
         readonly property var size0: win.ready ? doc.pagePointSize(0) : Qt.size(0, 0)
         readonly property var file: win.path ? lib.fileInfo(win.path) : ({})
         readonly property var rows: [
-            ["Название", doc.title], ["Автор", doc.author], ["Тема", doc.subject], ["Ключевые слова", doc.keywords],
-            ["Страниц", String(doc.pageCount)],
-            ["Размер страницы", Math.round(size0.width * 25.4 / 72) + " × " + Math.round(size0.height * 25.4 / 72) + " мм"],
-            ["Создан", date(doc.creationDate)], ["Изменён", date(doc.modificationDate)],
-            ["Программа", [doc.creator, doc.producer].filter(x => x).join(" · ")],
-            ["Файл", file.bytes ? (file.bytes / 1048576).toFixed(1).replace(".", ",") + " МБ" : ""], ["Папка", file.folder || ""]
+            [Tr.t("Название"), doc.title], [Tr.t("Автор"), doc.author], [Tr.t("Тема"), doc.subject], [Tr.t("Ключевые слова"), doc.keywords],
+            [Tr.t("Страниц"), String(doc.pageCount)],
+            [Tr.t("Размер страницы"), Math.round(size0.width * 25.4 / 72) + " × " + Math.round(size0.height * 25.4 / 72) + Tr.t(" мм")],
+            [Tr.t("Создан"), date(doc.creationDate)], [Tr.t("Изменён"), date(doc.modificationDate)],
+            [Tr.t("Программа"), [doc.creator, doc.producer].filter(x => x).join(" · ")],
+            [Tr.t("Файл"), file.bytes ? (file.bytes / 1048576).toFixed(1).replace(".", Tr.ru ? "," : ".") + Tr.t(" МБ") : ""], [Tr.t("Папка"), file.folder || ""]
         ].filter(r => r[1])
         Column {
             id: infoCol
@@ -606,7 +606,7 @@ Window {
             spacing: 10
             Row {
                 width: parent.width
-                Text { width: parent.width - 32; anchors.verticalCenter: parent.verticalCenter; text: "Сведения"; color: Theme.text; font.pixelSize: Theme.fs(16); font.weight: Font.DemiBold }
+                Text { width: parent.width - 32; anchors.verticalCenter: parent.verticalCenter; text: Tr.t("Сведения"); color: Theme.text; font.pixelSize: Theme.fs(16); font.weight: Font.DemiBold }
                 IconButton { width: 32; height: 32; glyphSize: 16; glyph: 0xF0156; onClicked: docInfo.open = false }
             }
             Repeater {

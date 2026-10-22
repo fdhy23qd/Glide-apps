@@ -17,7 +17,7 @@ Window {
     visible: true
     flags: Qt.Window | Qt.FramelessWindowHint
     color: Theme.background
-    title: gallery.count > 0 ? gallery.info.name + " — Фото" : "Фото"
+    title: gallery.count > 0 ? gallery.info.name + Tr.t(" — Фото") : Tr.t("Фото")
 
     readonly property bool fullscreen: visibility === Window.FullScreen
     function toggleFullscreen() { visibility = fullscreen ? Window.Windowed : Window.FullScreen }
@@ -31,26 +31,47 @@ Window {
         onPicked: urls => { if (urls.length) gallery.open(urls[0]) }
     }
     function openDialog() {
-        picker.open("Открыть изображение", "Изображения",
+        picker.open(Tr.t("Открыть изображение"), Tr.t("Изображения"),
                     ["*.jpg", "*.jpeg", "*.jfif", "*.png", "*.webp", "*.gif", "*.svg", "*.svgz", "*.bmp",
                      "*.tif", "*.tiff", "*.tga", "*.ico", "*.avif", "*.heic", "*.jxl"],
                     gallery.folder)
     }
-    Component.onCompleted: if (startPath) gallery.open(startPath)
+    Component.onCompleted: if (startPath && gallery.open(startPath) && gallery.isDir(startPath)) win.showGrid(true)
+
+    // ---- сетка папки (G) и слайд-шоу (S) ----
+    property bool grid: false
+    function showGrid(on) {
+        if (on && (gallery.count === 0 || editing)) return
+        if (on) { stopSlideshow(); info.open = false; menu.open = false }
+        grid = on
+        if (on) gridPage.focusGrid()
+    }
+    property bool slideshow: false
+    function startSlideshow() {
+        if (gallery.count < 2 || editing) return
+        showGrid(false); info.open = false; menu.open = false
+        slideshow = true; awake = false
+        toast.show(Tr.t("Слайд-шоу · любая клавиша — стоп"))
+    }
+    function stopSlideshow() { if (slideshow) { slideshow = false; toast.show(Tr.t("Слайд-шоу остановлено")) } }
+    Timer {
+        interval: 4000; repeat: true; running: win.slideshow
+        onTriggered: gallery.index = gallery.index < gallery.count - 1 ? gallery.index + 1 : 0
+    }
 
     function trash() {
         var name = gallery.info.name
         if (gallery.trash())
-            toast.show("«" + name + "» — в корзине", "Отменить", () => gallery.undoTrash())
+            toast.show("«" + name + Tr.t("» — в корзине"), Tr.t("Отменить"), () => gallery.undoTrash())
     }
-    function copyImage() { if (gallery.copyImage()) toast.show("Изображение скопировано") }
-    function copyPath() { gallery.copyPath(); toast.show("Путь скопирован") }
+    function copyImage() { if (gallery.copyImage()) toast.show(Tr.t("Изображение скопировано")) }
+    function copyPath() { gallery.copyPath(); toast.show(Tr.t("Путь скопирован")) }
 
     // ---- правка: обрезка, поворот, размер, формат, качество ----
     property bool editing: false
     function startEdit() {
         if (gallery.count === 0 || editing) return
-        if (gallery.info.animated || gallery.info.vector) { toast.show("Анимацию и SVG править нельзя"); return }
+        if (gallery.info.animated || gallery.info.vector) { toast.show(Tr.t("Анимацию и SVG править нельзя")); return }
         info.open = false
         menu.open = false
         editPanel.reset()
@@ -64,31 +85,39 @@ Window {
             if (gallery.canShow(file)) gallery.open(file)
             if (inTrash) {
                 gallery.recordReplace(original, inTrash, file)
-                toast.show("Оригинал — в корзине", "Отменить", () => gallery.undoTrash())
+                toast.show(Tr.t("Оригинал — в корзине"), Tr.t("Отменить"), () => gallery.undoTrash())
             } else {
-                toast.show("Сохранено: " + file.split("/").pop(), "Показать", () => gallery.showInFolder())
+                toast.show(Tr.t("Сохранено: ") + file.split("/").pop(), Tr.t("Показать"), () => gallery.showInFolder())
             }
         }
-        onFailed: error => toast.show("Не удалось сохранить: " + error)
+        onFailed: error => toast.show(Tr.t("Не удалось сохранить: ") + error)
     }
 
     // ---- панели показываются при движении мыши и прячутся через 2,5 с покоя ----
     property bool awake: true
-    readonly property bool chrome: awake || editing || gallery.count === 0 || headerHover.hovered || info.open || menu.open
-                                   || viewer.status === Image.Error
+    readonly property bool chrome: !slideshow && (awake || editing || grid || gallery.count === 0 || headerHover.hovered || info.open
+                                   || menu.open || viewer.status === Image.Error)
     Timer { id: sleepTimer; interval: 2500; running: win.awake; onTriggered: win.awake = false }
-    function poke() { awake = true; sleepTimer.restart() }
+    function poke() { if (slideshow) return; awake = true; sleepTimer.restart() }
 
     Viewer {
         id: viewer
         anchors.fill: parent
-        visible: !win.editing
+        visible: !win.editing && !win.grid
         gallery: gallery
         onActivity: win.poke()
         HoverHandler {
             onPointChanged: win.poke()
             cursorShape: win.chrome || !win.fullscreen ? Qt.ArrowCursor : Qt.BlankCursor
         }
+    }
+
+    GridPage {
+        id: gridPage
+        anchors.fill: parent
+        visible: win.grid
+        gallery: gallery
+        onPicked: i => { gallery.index = i; win.showGrid(false) }
     }
 
     // ---- пусто / ошибка / загрузка ----
@@ -105,14 +134,14 @@ Window {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Нет изображения"
+            text: Tr.t("Нет изображения")
             color: Theme.text
             font.pixelSize: Theme.fs(18)
             font.weight: Font.DemiBold
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Перетащите картинку в окно или откройте файл"
+            text: Tr.t("Перетащите картинку в окно или откройте файл")
             color: Theme.textSecondary
             font.pixelSize: Theme.fs(13)
         }
@@ -121,23 +150,23 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             primary: true
             glyph: 0xF0770
-            text: "Открыть…"
+            text: Tr.t("Открыть…")
             enabled: !picker.busy
             onClicked: win.openDialog()
         }
     }
     Text {
         anchors.centerIn: parent
-        visible: gallery.count > 0 && viewer.status === Image.Error
-        text: "Не удалось открыть «" + (gallery.info.name || "") + "»"
+        visible: gallery.count > 0 && viewer.status === Image.Error && !win.grid
+        text: Tr.t("Не удалось открыть «") + (gallery.info.name || "") + "»"
         color: Theme.textSecondary
         font.pixelSize: Theme.fs(14)
         textFormat: Text.PlainText
     }
     Text {   // большие файлы грузятся заметно — показываем, что работа идёт
         anchors.centerIn: parent
-        visible: viewer.status === Image.Loading && loadingDelay.done
-        text: "Загрузка…"
+        visible: viewer.status === Image.Loading && loadingDelay.done && !win.grid
+        text: Tr.t("Загрузка…")
         color: Theme.textMuted
         font.pixelSize: Theme.fs(13)
         Timer {
@@ -159,7 +188,7 @@ Window {
         glyph: 0xF0141
         visible: opacity > 0
         // своя прозрачность затирает «недоступно» у IconButton — перемножаем
-        opacity: (win.chrome && !win.editing && gallery.count > 1 ? 1 : 0) * (enabled ? 1 : Theme.disabledOpacity)
+        opacity: (win.chrome && !win.editing && !win.grid && gallery.count > 1 ? 1 : 0) * (enabled ? 1 : Theme.disabledOpacity)
         Behavior on opacity { NumberAnimation { duration: 160 } }
         enabled: gallery.index > 0
         onClicked: gallery.prev()
@@ -172,7 +201,7 @@ Window {
         flat: false
         glyph: 0xF0142
         visible: opacity > 0
-        opacity: (win.chrome && !win.editing && gallery.count > 1 ? 1 : 0) * (enabled ? 1 : Theme.disabledOpacity)
+        opacity: (win.chrome && !win.editing && !win.grid && gallery.count > 1 ? 1 : 0) * (enabled ? 1 : Theme.disabledOpacity)
         Behavior on opacity { NumberAnimation { duration: 160 } }
         enabled: gallery.index < gallery.count - 1
         onClicked: gallery.next()
@@ -211,7 +240,7 @@ Window {
             spacing: 1
             Text {
                 width: parent.width
-                text: gallery.count > 0 ? gallery.info.name : "Фото"
+                text: win.grid ? Tr.t("Все фото папки") + " · " + gallery.count : gallery.count > 0 ? gallery.info.name : Tr.t("Фото")
                 color: Theme.text
                 font.pixelSize: Theme.fs(14)
                 font.weight: Font.DemiBold
@@ -221,9 +250,10 @@ Window {
             Text {
                 width: parent.width
                 visible: gallery.count > 0
-                text: (gallery.index + 1) + " из " + gallery.count
-                      + (gallery.info.width ? "  ·  " + gallery.info.width + " × " + gallery.info.height : "")
-                      + "  ·  " + info.sizeText(gallery.info.bytes || 0)
+                text: win.grid ? gallery.folder
+                      : (gallery.index + 1) + Tr.t(" из ") + gallery.count
+                        + (gallery.info.width ? "  ·  " + gallery.info.width + " × " + gallery.info.height : "")
+                        + "  ·  " + info.sizeText(gallery.info.bytes || 0)
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fs(12)
                 elide: Text.ElideRight
@@ -239,7 +269,13 @@ Window {
             spacing: 2
             readonly property bool wideEnough: win.width > 760
 
-            IconButton { glyph: 0xF06EC; tip: "Уменьшить  −"; enabled: gallery.count > 0 && !viewer.fitted; onClicked: viewer.zoomOut() }
+            IconButton { glyph: win.grid ? 0xF02E9 : 0xF11D9; tip: win.grid ? Tr.t("К фото  G") : Tr.t("Все фото папки  G"); on: win.grid
+                         enabled: gallery.count > 0; onClicked: win.showGrid(!win.grid) }
+            Item { width: 8; height: 1 }
+            Row {   // действия с одним фото — не в сетке
+            visible: !win.grid
+            spacing: 2
+            IconButton { glyph: 0xF06EC; tip: Tr.t("Уменьшить  −"); enabled: gallery.count > 0 && !viewer.fitted; onClicked: viewer.zoomOut() }
             Rectangle {   // масштаб: щелчок — по размеру окна ↔ 100 %
                 Behavior on color { ColorAnimation { duration: 140 } }
                 width: 64; height: 36
@@ -264,17 +300,18 @@ Window {
                     onClicked: viewer.toggleZoom()
                 }
             }
-            IconButton { glyph: 0xF06ED; tip: "Увеличить  +"; enabled: gallery.count > 0; onClicked: viewer.zoomIn() }
+            IconButton { glyph: 0xF06ED; tip: Tr.t("Увеличить  +"); enabled: gallery.count > 0; onClicked: viewer.zoomIn() }
             Item { width: 8; height: 1 }
-            IconButton { visible: actions.wideEnough; glyph: 0xF0465; tip: "Повернуть влево  Shift+R"; enabled: gallery.count > 0; onClicked: viewer.rotate(-90) }
-            IconButton { visible: actions.wideEnough; glyph: 0xF0467; tip: "Повернуть вправо  R"; enabled: gallery.count > 0; onClicked: viewer.rotate(90) }
-            IconButton { glyph: 0xF03EB; tip: "Изменить  E"; enabled: gallery.count > 0; onClicked: win.startEdit() }
-            IconButton { glyph: 0xF09E7; tip: "В корзину  Delete"; enabled: gallery.count > 0; onClicked: win.trash() }
-            IconButton { glyph: 0xF02FD; tip: "Сведения  I"; on: info.open; enabled: gallery.count > 0; onClicked: info.open = !info.open }
-            IconButton { id: moreBtn; glyph: 0xF01D9; tip: "Ещё"; on: menu.open; onClicked: menu.open = !menu.open }
+            IconButton { visible: actions.wideEnough; glyph: 0xF0465; tip: Tr.t("Повернуть влево  Shift+R"); enabled: gallery.count > 0; onClicked: viewer.rotate(-90) }
+            IconButton { visible: actions.wideEnough; glyph: 0xF0467; tip: Tr.t("Повернуть вправо  R"); enabled: gallery.count > 0; onClicked: viewer.rotate(90) }
+            IconButton { glyph: 0xF03EB; tip: Tr.t("Изменить  E"); enabled: gallery.count > 0; onClicked: win.startEdit() }
+            IconButton { glyph: 0xF09E7; tip: Tr.t("В корзину  Delete"); enabled: gallery.count > 0; onClicked: win.trash() }
+            IconButton { glyph: 0xF02FD; tip: Tr.t("Сведения  I"); on: info.open; enabled: gallery.count > 0; onClicked: info.open = !info.open }
+            }
+            IconButton { id: moreBtn; glyph: 0xF01D9; tip: Tr.t("Ещё"); on: menu.open; onClicked: menu.open = !menu.open }
             Item { width: 8; height: 1 }
-            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: win.fullscreen ? "Выйти из полноэкранного  F" : "Во весь экран  F"; onClicked: win.toggleFullscreen() }
-            IconButton { glyph: 0xF0156; tip: "Закрыть  Esc"; onClicked: win.close() }
+            IconButton { glyph: win.fullscreen ? 0xF0294 : 0xF0293; tip: win.fullscreen ? Tr.t("Выйти из полноэкранного  F") : Tr.t("Во весь экран  F"); onClicked: win.toggleFullscreen() }
+            IconButton { glyph: 0xF0156; tip: Tr.t("Закрыть  Esc"); onClicked: win.close() }
         }
     }
 
@@ -284,7 +321,7 @@ Window {
         anchors.rightMargin: 12
         y: 8
         spacing: 6
-        TextButton { implicitHeight: 36; text: "Отмена"; onClicked: win.cancelEdit() }
+        TextButton { implicitHeight: 36; text: Tr.t("Отмена"); onClicked: win.cancelEdit() }
     }
     EditView {
         id: editView
@@ -327,10 +364,11 @@ Window {
         id: menu
         property bool open: false
         readonly property var items: [
-            { glyph: 0xF018F, text: "Копировать изображение", keys: "Ctrl+C", run: () => win.copyImage(), needImage: true },
-            { glyph: 0xF0219, text: "Копировать путь", keys: "Ctrl+Shift+C", run: () => win.copyPath(), needImage: true },
-            { glyph: 0xF0256, text: "Показать в папке", keys: "", run: () => gallery.showInFolder(), needImage: true },
-            { glyph: 0xF0770, text: "Открыть…", keys: "Ctrl+O", run: () => win.openDialog(), needImage: false }
+            { glyph: 0xF018F, text: Tr.t("Копировать изображение"), keys: "Ctrl+C", run: () => win.copyImage(), needImage: true },
+            { glyph: 0xF0219, text: Tr.t("Копировать путь"), keys: "Ctrl+Shift+C", run: () => win.copyPath(), needImage: true },
+            { glyph: 0xF0256, text: Tr.t("Показать в папке"), keys: "", run: () => gallery.showInFolder(), needImage: true },
+            { glyph: 0xF040A, text: Tr.t("Слайд-шоу"), keys: "S", run: () => win.startSlideshow(), needImage: true },
+            { glyph: 0xF0770, text: Tr.t("Открыть…"), keys: "Ctrl+O", run: () => win.openDialog(), needImage: false }
         ]
         width: 290
         height: menuCol.implicitHeight + 12
@@ -409,7 +447,13 @@ Window {
     ResizeEdges { window: win }
 
     // ---- клавиши (просмотр — только вне правки) ----
-    readonly property bool viewing: !editing
+    readonly property bool viewing: !editing && !grid && !slideshow   // в слайд-шоу клавиши — только «стоп»
+    Shortcut { enabled: !win.editing; sequence: "G"; onActivated: win.showGrid(!win.grid) }
+    Shortcut { enabled: win.viewing; sequence: "S"; onActivated: win.slideshow ? win.stopSlideshow() : win.startSlideshow() }
+    Item {   // слайд-шоу: любая клавиша или движение мыши — стоп
+        focus: win.slideshow
+        Keys.onPressed: e => { if (win.slideshow) { win.stopSlideshow(); e.accepted = true } }
+    }
     Shortcut { enabled: win.viewing; sequences: ["Right", "PgDown", "Space", "N"]; onActivated: gallery.next() }
     Shortcut { enabled: win.viewing; sequences: ["Left", "PgUp", "Backspace", "P"]; onActivated: gallery.prev() }
     Shortcut { enabled: win.viewing; sequence: "Home"; onActivated: gallery.index = 0 }
@@ -433,8 +477,10 @@ Window {
     Shortcut {
         sequence: "Esc"
         onActivated: {
-            if (win.editing) win.cancelEdit()
+            if (win.slideshow) win.stopSlideshow()
+            else if (win.editing) win.cancelEdit()
             else if (menu.open) menu.open = false
+            else if (win.grid && viewer.status !== Image.Null) win.showGrid(false)
             else if (info.open) info.open = false
             else if (win.fullscreen) win.toggleFullscreen()
             else win.close()

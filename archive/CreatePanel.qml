@@ -12,7 +12,7 @@ Item {
     property string format: "zip"
     property bool working: false
     property var homeOf: p => p
-    property var humanSize: b => b + " Б"
+    property var humanSize: b => b + Tr.t(" Б")
     property var countText: (f, d) => f + ""
 
     signal accepted(string out, string format, string password)
@@ -21,18 +21,18 @@ Item {
     signal cancelled()
 
     readonly property var formats: [
-        { id: "zip", hint: "Открывается везде, можно поставить пароль" },
-        { id: "7z", hint: "Сильнее сжимает; открывают 7-Zip, WinRAR и Linux" },
-        { id: "tar.zst", hint: "Быстро и хорошо сжимает — для Linux" },
-        { id: "tar.xz", hint: "Компактнее всех, но медленнее — для Linux" },
-        { id: "tar.gz", hint: "Старый совместимый формат для Linux и macOS" }
+        { id: "zip", hint: Tr.t("Открывается везде, можно поставить пароль") },
+        { id: "7z", hint: Tr.t("Сильнее сжимает; открывают 7-Zip, WinRAR и Linux") },
+        { id: "tar.zst", hint: Tr.t("Быстро и хорошо сжимает — для Linux") },
+        { id: "tar.xz", hint: Tr.t("Компактнее всех, но медленнее — для Linux") },
+        { id: "tar.gz", hint: Tr.t("Старый совместимый формат для Linux и macOS") }
     ]
     readonly property bool passwordAllowed: format === "zip"
 
     function show(i, suggested) {
         info = i
         folder = i.folder
-        let n = suggested ? suggested.split("/").pop() : (i.names[0] || "Архив")
+        let n = suggested ? suggested.split("/").pop() : (i.names[0] || Tr.t("Архив"))
         if (n.endsWith(".zip")) n = n.substring(0, n.length - 4)
         nameField.text = n
         protect.checked = false
@@ -84,7 +84,7 @@ Item {
                 spacing: 14
 
                 Text {
-                    text: "Новый архив"
+                    text: Tr.t("Новый архив")
                     color: Theme.text
                     font.pixelSize: Theme.fs(18)
                     font.weight: Font.DemiBold
@@ -111,14 +111,14 @@ Item {
                         }
                         Text {
                             width: parent.width
-                            text: panel.info.names.slice(0, 4).join(", ") + (panel.info.names.length > 4 ? " и ещё " + (panel.info.names.length - 4) : "")
+                            text: panel.info.names.slice(0, 4).join(", ") + (panel.info.names.length > 4 ? Tr.t(" и ещё ") + (panel.info.names.length - 4) : "")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.fs(12)
                             elide: Text.ElideRight
                             textFormat: Text.PlainText
                         }
                         Text {
-                            text: "Перетащите сюда ещё файлы, чтобы добавить"
+                            text: Tr.t("Перетащите сюда ещё файлы, чтобы добавить")
                             color: Theme.textMuted
                             font.pixelSize: Theme.fs(12)
                         }
@@ -129,14 +129,14 @@ Item {
                 Column {
                     width: parent.width
                     spacing: 6
-                    Text { text: "Имя"; color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
+                    Text { text: Tr.t("Имя"); color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
                     Row {
                         width: parent.width
                         spacing: 8
                         TextField {
                             id: nameField
                             width: parent.width - ext.width - 8
-                            placeholder: "Имя архива"
+                            placeholder: Tr.t("Имя архива")
                             onAccepted: panel.submit()
                             onCancelled: { panel.close(); panel.cancelled() }
                         }
@@ -154,7 +154,7 @@ Item {
                 Column {
                     width: parent.width
                     spacing: 8
-                    Text { text: "Формат"; color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
+                    Text { text: Tr.t("Формат"); color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
                     Flow {
                         width: parent.width
                         spacing: 8
@@ -181,7 +181,7 @@ Item {
                 Column {
                     width: parent.width
                     spacing: 6
-                    Text { text: "Куда"; color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
+                    Text { text: Tr.t("Куда"); color: Theme.textSecondary; font.pixelSize: Theme.fs(12) }
                     Row {
                         width: parent.width
                         spacing: 8
@@ -202,7 +202,7 @@ Item {
                                 textFormat: Text.PlainText
                             }
                         }
-                        TextButton { id: change; implicitHeight: 36; text: "Изменить"; onClicked: panel.pickFolder() }
+                        TextButton { id: change; implicitHeight: 36; text: Tr.t("Изменить"); onClicked: panel.pickFolder() }
                     }
                 }
 
@@ -213,7 +213,7 @@ Item {
                     Toggle {
                         id: protect
                         width: parent.width
-                        text: panel.passwordAllowed ? "Защитить паролем" : "Пароль — только для zip"
+                        text: panel.passwordAllowed ? Tr.t("Защитить паролем") : Tr.t("Пароль — только для zip")
                         enabled: panel.passwordAllowed
                         onToggled: c => {
                             checked = c
@@ -234,18 +234,18 @@ Item {
                             width: parent.width - eye.width - 4
                             password: !eye.on
                             glyph: 0xF033E
-                            placeholder: "Пароль"
+                            placeholder: Tr.t("Пароль")
                             onAccepted: panel.submit()
                             onCancelled: { panel.close(); panel.cancelled() }
                         }
-                        IconButton { id: eye; anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0208; tip: on ? "Скрыть" : "Показать"; onClicked: on = !on }
+                        IconButton { id: eye; anchors.verticalCenter: parent.verticalCenter; glyph: 0xF0208; tip: on ? Tr.t("Скрыть") : Tr.t("Показать"); onClicked: on = !on }
                     }
                     Text {
                         opacity: protect.checked && panel.passwordAllowed ? 1 : 0
                         visible: opacity > 0
                         Behavior on opacity { NumberAnimation { duration: 160 } }
                         width: parent.width
-                        text: "Шифрование AES-256: имена файлов видны, содержимое — нет. Забытый пароль не восстановить."
+                        text: Tr.t("Шифрование AES-256: имена файлов видны, содержимое — нет. Забытый пароль не восстановить.")
                         color: Theme.textMuted
                         font.pixelSize: Theme.fs(12)
                         wrapMode: Text.WordWrap
@@ -262,11 +262,11 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 18
             spacing: 8
-            TextButton { text: "Отмена"; flat: true; onClicked: { panel.close(); panel.cancelled() } }
+            TextButton { text: Tr.t("Отмена"); flat: true; onClicked: { panel.close(); panel.cancelled() } }
             TextButton {
                 primary: true
                 glyph: 0xF003C
-                text: "Создать"
+                text: Tr.t("Создать")
                 enabled: nameField.text.trim() !== "" && !panel.working && panel.info.count > 0
                          && (!protect.checked || !panel.passwordAllowed || pwField.text !== "")
                 onClicked: panel.submit()

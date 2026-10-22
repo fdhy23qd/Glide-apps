@@ -1,4 +1,5 @@
 #include "gallery.h"
+#include "glidetr.h"
 
 #include <QClipboard>
 #include <QCollator>
@@ -53,15 +54,20 @@ bool Gallery::isImage(const QString &path)
     return suffixes().contains(QFileInfo(path).suffix().toLower());
 }
 
+bool Gallery::isDir(const QString &pathOrUrl) const
+{
+    return QFileInfo(toLocal(pathOrUrl)).isDir();
+}
+
 bool Gallery::open(const QString &pathOrUrl)
 {
     const QFileInfo fi(toLocal(pathOrUrl));
     if (!fi.exists()) {
-        emit error(QStringLiteral("Файл не найден: %1").arg(fi.fileName()));
+        emit error(glideTr(QStringLiteral("Файл не найден: %1")).arg(fi.fileName()));
         return false;
     }
     if (!fi.isDir() && !isImage(fi.fileName())) {
-        emit error(QStringLiteral("Формат «%1» не поддерживается").arg(fi.suffix()));
+        emit error(glideTr(QStringLiteral("Формат «%1» не поддерживается")).arg(fi.suffix()));
         return false;
     }
     const QString folder = fi.isDir() ? fi.absoluteFilePath() : fi.absolutePath();
@@ -72,7 +78,7 @@ bool Gallery::open(const QString &pathOrUrl)
     m_watcher.addPath(m_folder);
     rescan(fi.isDir() ? QString() : fi.absoluteFilePath());
     if (m_index < 0)
-        emit error(QStringLiteral("В папке нет картинок"));
+        emit error(glideTr(QStringLiteral("В папке нет картинок")));
     return m_index >= 0;
 }
 
@@ -179,7 +185,7 @@ bool Gallery::trash()
         return false;
     QString inTrash;
     if (!QFile::moveToTrash(p, &inTrash)) {
-        emit error(QStringLiteral("Не удалось переместить в корзину"));
+        emit error(glideTr(QStringLiteral("Не удалось переместить в корзину")));
         return false;
     }
     m_trashed.append({p, inTrash, {}});
@@ -205,7 +211,7 @@ bool Gallery::undoTrash()
     if (!t.replacement.isEmpty() && QFileInfo::exists(t.replacement))
         QFile::moveToTrash(t.replacement);
     if (QFileInfo::exists(t.original) || !QFile::rename(t.inTrash, t.original)) {
-        emit error(QStringLiteral("Не удалось вернуть файл из корзины"));
+        emit error(glideTr(QStringLiteral("Не удалось вернуть файл из корзины")));
         return false;
     }
     // описание в Trash/info больше не нужно: иначе корзина покажет «призрак»

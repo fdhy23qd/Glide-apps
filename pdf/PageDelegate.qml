@@ -147,7 +147,7 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onContainsMouseChanged: holder.view.hoverLink = containsMouse
-                                            ? (page >= 0 ? "Страница " + (page + 1) : String(url)) : ""
+                                            ? (page >= 0 ? Tr.t("Страница ") + (page + 1) : String(url)) : ""
                     onClicked: {
                         if (page >= 0) holder.view.goToLocation(page, location, true)
                         else holder.view.openExternal(String(url))

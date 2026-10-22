@@ -11,13 +11,14 @@ qt_add_qml_module(glide-photos
         Main.qml
         Viewer.qml
         PhotoSlot.qml
+        GridPage.qml
         InfoPanel.qml
         EditView.qml
         EditPanel.qml
 )
 
 target_include_directories(glide-photos PRIVATE ${PROJECT_SOURCE_DIR}/common)
-target_link_libraries(glide-photos PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus glideuiplugin)
+target_link_libraries(glide-photos PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus glideuiplugin glidetr)
 
 install(TARGETS glide-photos RUNTIME DESTINATION bin)
 # полный путь в Exec: GIO (Nautilus, «Открыть с помощью») прячет приложение, если программы нет в его PATH,
@@ -28,4 +29,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glide-photos.desktop DESTINATION ${CMA
 
 # самотест правки (не устанавливается): build/photos/glide-photos-selftest пустая_папка
 qt_add_executable(glide-photos-selftest EXCLUDE_FROM_ALL selftest.cpp imageeditor.h imageeditor.cpp gallery.h gallery.cpp)
-target_link_libraries(glide-photos-selftest PRIVATE Qt6::Gui Qt6::Qml Qt6::DBus)
+target_link_libraries(glide-photos-selftest PRIVATE Qt6::Gui Qt6::Qml Qt6::DBus glidetr)

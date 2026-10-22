@@ -20,7 +20,7 @@ Window {
     property bool hiding: startCapture !== ""
     flags: Qt.Window | Qt.FramelessWindowHint
     color: Theme.background
-    title: shot.ready ? shot.path.split("/").pop() + " — Скриншоты" : "Скриншоты"
+    title: shot.ready ? shot.path.split("/").pop() + Tr.t(" — Скриншоты") : Tr.t("Скриншоты")
 
     Shot {
         id: shot
@@ -87,25 +87,25 @@ Window {
     function cropMap() { return crop && crop.w > 1 && crop.h > 1 ? crop : ({}) }
     function copy() {
         commitText()
-        if (shot.copy(items, cropMap())) { dirty = false; toast.show("Скопировано в буфер") }
+        if (shot.copy(items, cropMap())) { dirty = false; toast.show(Tr.t("Скопировано в буфер")) }
     }
     function saveTo(file) {
         commitText()
         if (shot.save(items, cropMap(), file)) {
             dirty = false
-            toast.show("Сохранено: " + file.split("/").pop(), "Показать", () => shot.showInFolder(file))
+            toast.show(Tr.t("Сохранено: ") + file.split("/").pop(), Tr.t("Показать"), () => shot.showInFolder(file))
         }
     }
     function save() { if (shot.ready) saveTo(shot.savePath()) }
     function saveAs() {
         if (!shot.ready) return
         saveAsPending = true
-        picker.save("Сохранить скриншот", shot.savePath().split("/").pop(), shot.folder)
+        picker.save(Tr.t("Сохранить скриншот"), shot.savePath().split("/").pop(), shot.folder)
     }
     onClosing: close => {
         if (dirty && !forceClose) {
             close.accepted = false
-            toast.show("Изменения не сохранены и не скопированы", "Закрыть", () => { win.forceClose = true; win.close() })
+            toast.show(Tr.t("Изменения не сохранены и не скопированы"), Tr.t("Закрыть"), () => { win.forceClose = true; win.close() })
         }
     }
     property bool forceClose: false
@@ -124,7 +124,7 @@ Window {
             width: parent.width - actions.width - 40
             Text {
                 width: parent.width
-                text: shot.ready ? shot.path.split("/").pop() : "Скриншоты"
+                text: shot.ready ? shot.path.split("/").pop() : Tr.t("Скриншоты")
                 color: Theme.text
                 font.pixelSize: Theme.fs(14)
                 font.weight: Font.DemiBold
@@ -133,7 +133,7 @@ Window {
             }
             Text {
                 visible: shot.ready
-                text: (win.crop ? Math.round(win.crop.w) + " × " + Math.round(win.crop.h) + " (обрезано из " : "")
+                text: (win.crop ? Math.round(win.crop.w) + " × " + Math.round(win.crop.h) + Tr.t(" (обрезано из ") : "")
                       + shot.size.width + " × " + shot.size.height + (win.crop ? ")" : "")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fs(11)
@@ -145,13 +145,13 @@ Window {
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 4
-            IconButton { glyph: 0xF0100; tip: "Новый снимок"; on: newMenu.open; onClicked: newMenu.open = !newMenu.open }
+            IconButton { glyph: 0xF0100; tip: Tr.t("Новый снимок"); on: newMenu.open; onClicked: newMenu.open = !newMenu.open }
             Item { width: 6; height: 1 }
-            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; text: "Сохранить как…"; flat: true; enabled: shot.ready; onClicked: win.saveAs() }
-            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; glyph: 0xF0193; text: "Сохранить"; enabled: shot.ready; onClicked: win.save() }
-            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; glyph: 0xF018F; text: "Копировать"; primary: true; enabled: shot.ready; onClicked: win.copy() }
+            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; text: Tr.t("Сохранить как…"); flat: true; enabled: shot.ready; onClicked: win.saveAs() }
+            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; glyph: 0xF0193; text: Tr.t("Сохранить"); enabled: shot.ready; onClicked: win.save() }
+            TextButton { anchors.verticalCenter: parent.verticalCenter; implicitHeight: 36; glyph: 0xF018F; text: Tr.t("Копировать"); primary: true; enabled: shot.ready; onClicked: win.copy() }
             Item { width: 6; height: 1 }
-            IconButton { glyph: 0xF0156; tip: "Закрыть  Esc"; onClicked: win.close() }
+            IconButton { glyph: 0xF0156; tip: Tr.t("Закрыть  Esc"); onClicked: win.close() }
         }
     }
 
@@ -311,15 +311,15 @@ Window {
             visible: !shot.ready && !shot.capturing
             spacing: 14
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: Theme.icon(0xF0100); color: Theme.textMuted; font.family: Theme.iconFont; font.pixelSize: 64 }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Новый скриншот"; color: Theme.text; font.pixelSize: Theme.fs(18); font.weight: Font.DemiBold }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Tr.t("Новый скриншот"); color: Theme.text; font.pixelSize: Theme.fs(18); font.weight: Font.DemiBold }
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 8
-                TextButton { primary: true; text: "Область"; onClicked: win.capture("region") }
-                TextButton { text: "Окно"; onClicked: win.capture("window") }
-                TextButton { text: "Весь экран"; onClicked: win.capture("screen") }
+                TextButton { primary: true; text: Tr.t("Область"); onClicked: win.capture("region") }
+                TextButton { text: Tr.t("Окно"); onClicked: win.capture("window") }
+                TextButton { text: Tr.t("Весь экран"); onClicked: win.capture("screen") }
             }
-            TextButton { anchors.horizontalCenter: parent.horizontalCenter; flat: true; text: "Открыть картинку…"; onClicked: picker.open("Открыть картинку", "Изображения", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
+            TextButton { anchors.horizontalCenter: parent.horizontalCenter; flat: true; text: Tr.t("Открыть картинку…"); onClicked: picker.open(Tr.t("Открыть картинку"), Tr.t("Изображения"), ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
         }
     }
 
@@ -362,11 +362,11 @@ Window {
             spacing: 2
             Repeater {
                 model: [
-                    { id: "arrow", glyph: 0xF005C, tip: "Стрелка  A" }, { id: "rect", glyph: 0xF0E5F, tip: "Рамка  R" },
-                    { id: "ellipse", glyph: 0xF0766, tip: "Овал  O" }, { id: "line", glyph: 0xF0374, tip: "Линия  L" },
-                    { id: "pen", glyph: 0xF03EB, tip: "Карандаш  P" }, { id: "marker", glyph: 0xF0652, tip: "Маркер  M" },
-                    { id: "text", glyph: 0xF0284, tip: "Текст  T" }, { id: "step", glyph: 0xF0CA0, tip: "Номер шага  N" },
-                    { id: "pixel", glyph: 0xF00B5, tip: "Размыть  B" }, { id: "crop", glyph: 0xF019E, tip: "Обрезать  C" }
+                    { id: "arrow", glyph: 0xF005C, tip: Tr.t("Стрелка  A") }, { id: "rect", glyph: 0xF0E5F, tip: Tr.t("Рамка  R") },
+                    { id: "ellipse", glyph: 0xF0766, tip: Tr.t("Овал  O") }, { id: "line", glyph: 0xF0374, tip: Tr.t("Линия  L") },
+                    { id: "pen", glyph: 0xF03EB, tip: Tr.t("Карандаш  P") }, { id: "marker", glyph: 0xF0652, tip: Tr.t("Маркер  M") },
+                    { id: "text", glyph: 0xF0284, tip: Tr.t("Текст  T") }, { id: "step", glyph: 0xF0CA0, tip: Tr.t("Номер шага  N") },
+                    { id: "pixel", glyph: 0xF00B5, tip: Tr.t("Размыть  B") }, { id: "crop", glyph: 0xF019E, tip: Tr.t("Обрезать  C") }
                 ]
                 delegate: IconButton {
                     required property var modelData
@@ -414,8 +414,8 @@ Window {
                 }
             }
             Item { width: 9; height: 36; Rectangle { anchors.centerIn: parent; width: 1; height: 28; color: Theme.outline } }
-            IconButton { glyph: 0xF054C; tip: "Отменить  Ctrl+Z"; tipAbove: true; enabled: win.undoStack.length > 0; onClicked: win.undo() }
-            IconButton { glyph: 0xF044E; tip: "Повторить  Ctrl+Shift+Z"; tipAbove: true; enabled: win.redoStack.length > 0; onClicked: win.redo() }
+            IconButton { glyph: 0xF054C; tip: Tr.t("Отменить  Ctrl+Z"); tipAbove: true; enabled: win.undoStack.length > 0; onClicked: win.undo() }
+            IconButton { glyph: 0xF044E; tip: Tr.t("Повторить  Ctrl+Shift+Z"); tipAbove: true; enabled: win.redoStack.length > 0; onClicked: win.redo() }
         }
     }
 
@@ -428,10 +428,10 @@ Window {
         x: parent.width - width - 300
         y: 50
         items: [
-            { text: "Область", run: () => win.capture("region") },
-            { text: "Окно", run: () => win.capture("window") },
-            { text: "Весь экран", run: () => win.capture("screen") },
-            { text: "Открыть картинку…", run: () => picker.open("Открыть картинку", "Изображения", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
+            { text: Tr.t("Область"), run: () => win.capture("region") },
+            { text: Tr.t("Окно"), run: () => win.capture("window") },
+            { text: Tr.t("Весь экран"), run: () => win.capture("screen") },
+            { text: Tr.t("Открыть картинку…"), run: () => picker.open(Tr.t("Открыть картинку"), Tr.t("Изображения"), ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
         ]
     }
 
@@ -463,7 +463,7 @@ Window {
     Shortcut { sequence: "Ctrl+C"; enabled: win.keysOn && shot.ready; onActivated: win.copy() }
     Shortcut { sequence: "Ctrl+S"; enabled: shot.ready; onActivated: win.save() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: shot.ready; onActivated: win.saveAs() }
-    Shortcut { sequence: "Ctrl+O"; onActivated: picker.open("Открыть картинку", "Изображения", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
+    Shortcut { sequence: "Ctrl+O"; onActivated: picker.open(Tr.t("Открыть картинку"), Tr.t("Изображения"), ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"], shot.folder) }
     Shortcut { sequences: ["Ctrl+W", "Ctrl+Q"]; onActivated: win.close() }
     Shortcut {
         sequence: "Esc"

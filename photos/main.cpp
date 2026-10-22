@@ -3,6 +3,7 @@
 #include <QtQml/qqmlextensionplugin.h>
 
 #include "testhook.h"
+#include "glidetr.h"
 
 Q_IMPORT_QML_PLUGIN(Glide_UiPlugin)
 
@@ -10,7 +11,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     app.setApplicationName("glide-photos");
-    app.setApplicationDisplayName("Фото");
+    app.setApplicationDisplayName(glideTr("Фото"));
     app.setOrganizationName("Glide");
     app.setDesktopFileName("glide-photos");   // app_id окна — док и niri находят значок
 

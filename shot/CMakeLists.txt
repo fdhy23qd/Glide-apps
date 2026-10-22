@@ -12,7 +12,7 @@ qt_add_qml_module(glide-shot
 )
 
 target_include_directories(glide-shot PRIVATE ${PROJECT_SOURCE_DIR}/common)
-target_link_libraries(glide-shot PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus glideuiplugin)
+target_link_libraries(glide-shot PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus glideuiplugin glidetr)
 
 install(TARGETS glide-shot RUNTIME DESTINATION bin)
 include(GNUInstallDirs)
@@ -21,4 +21,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glide-shot.desktop DESTINATION ${CMAKE
 
 # самотест отрисовки (не устанавливается): build/shot/glide-shot-selftest папка
 qt_add_executable(glide-shot-selftest EXCLUDE_FROM_ALL selftest.cpp shot.h shot.cpp)
-target_link_libraries(glide-shot-selftest PRIVATE Qt6::Gui Qt6::Qml Qt6::DBus)
+target_link_libraries(glide-shot-selftest PRIVATE Qt6::Gui Qt6::Qml Qt6::DBus glidetr)

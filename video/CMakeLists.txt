@@ -16,7 +16,7 @@ qt_add_qml_module(glide-video
 )
 
 target_include_directories(glide-video PRIVATE ${PROJECT_SOURCE_DIR}/common)
-target_link_libraries(glide-video PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus Qt6::Multimedia glideuiplugin)
+target_link_libraries(glide-video PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus Qt6::Multimedia glideuiplugin glidetr)
 
 install(TARGETS glide-video RUNTIME DESTINATION bin)
 # полный путь в Exec: GIO (Nautilus, «Открыть с помощью») прячет приложение, если программы нет в его PATH,
@@ -27,4 +27,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glide-video.desktop DESTINATION ${CMAK
 
 # самотест редактора (не устанавливается): build/video/glide-video-selftest папка_с_тестовыми_файлами
 qt_add_executable(glide-video-selftest EXCLUDE_FROM_ALL selftest.cpp converter.h converter.cpp)
-target_link_libraries(glide-video-selftest PRIVATE Qt6::Core Qt6::Qml)
+target_link_libraries(glide-video-selftest PRIVATE Qt6::Core Qt6::Qml glidetr)

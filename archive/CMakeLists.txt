@@ -15,7 +15,7 @@ qt_add_qml_module(glide-archive
 )
 
 target_include_directories(glide-archive PRIVATE ${PROJECT_SOURCE_DIR}/common)
-target_link_libraries(glide-archive PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus PkgConfig::LIBARCHIVE glideuiplugin)
+target_link_libraries(glide-archive PRIVATE Qt6::Gui Qt6::GuiPrivate Qt6::Quick Qt6::DBus PkgConfig::LIBARCHIVE glideuiplugin glidetr)
 
 install(TARGETS glide-archive RUNTIME DESTINATION bin)
 include(GNUInstallDirs)
@@ -25,4 +25,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glide-archive.desktop DESTINATION ${CM
 # самотест движка (не устанавливается): build/archive/glide-archive-selftest папка
 add_executable(glide-archive-selftest EXCLUDE_FROM_ALL selftest.cpp archiver.h archiver.cpp)
 set_target_properties(glide-archive-selftest PROPERTIES AUTOMOC ON)
-target_link_libraries(glide-archive-selftest PRIVATE Qt6::Qml Qt6::DBus PkgConfig::LIBARCHIVE)
+target_link_libraries(glide-archive-selftest PRIVATE Qt6::Qml Qt6::DBus PkgConfig::LIBARCHIVE glidetr)

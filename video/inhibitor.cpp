@@ -1,4 +1,5 @@
 #include "inhibitor.h"
+#include "glidetr.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -18,7 +19,7 @@ void Inhibitor::setActive(bool on)
     m_want = on;
     if (on && m_cookie == 0) {
         QDBusMessage msg = call("Inhibit");
-        msg << QStringLiteral("glide-video") << QStringLiteral("Идёт видео");
+        msg << QStringLiteral("glide-video") << glideTr(QStringLiteral("Идёт видео"));
         auto *w = new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(msg), this);
         connect(w, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *w) {
             w->deleteLater();

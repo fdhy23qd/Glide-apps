@@ -52,6 +52,7 @@ public:
 
     static bool isImage(const QString &path);
     Q_INVOKABLE bool canShow(const QString &path) const { return isImage(path); }
+    Q_INVOKABLE bool isDir(const QString &pathOrUrl) const;   // открыли папку — начать с сетки
 
 signals:
     void listChanged();

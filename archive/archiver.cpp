@@ -1,4 +1,5 @@
 #include "archiver.h"
+#include "glidetr.h"
 
 #include <QCollator>
 #include <QDateTime>
@@ -30,7 +31,7 @@ constexpr int Block = 1 << 16;
 QString errorOf(archive *a)
 {
     const char *s = archive_error_string(a);
-    return s ? QString::fromUtf8(s) : QStringLiteral("ошибка libarchive");
+    return s ? QString::fromUtf8(s) : glideTr(QStringLiteral("ошибка libarchive"));
 }
 
 bool passphraseError(const QString &msg)
@@ -137,7 +138,7 @@ QString openReader(Reader &r, const QString &path, const QString &password, cons
     archive_read_free(r.a);
     r.a = nullptr;
     return err.contains(QLatin1String("Unrecognized"), Qt::CaseInsensitive)
-        ? QStringLiteral("Это не архив или формат не поддерживается") : err;
+        ? glideTr(QStringLiteral("Это не архив или формат не поддерживается")) : err;
 }
 
 QString entryName(const Reader &r, archive_entry *e, const QString &archivePath)
@@ -230,7 +231,7 @@ static QString run7z(QProcess &p, const QStringList &args, const QString &passwo
     p.setProcessChannelMode(QProcess::SeparateChannels);
     p.start();
     if (!p.waitForStarted(5000))
-        return QStringLiteral("7z не запустился");
+        return glideTr(QStringLiteral("7z не запустился"));
     p.write(password.toUtf8() + "\n");   // на вопрос «Enter password» (и пустой — если не спросит)
     p.closeWriteChannel();
     static const QRegularExpression percent(QStringLiteral("(\\d+)%"));
@@ -262,7 +263,7 @@ static QString run7z(QProcess &p, const QStringList &args, const QString &passwo
             || err.contains(QLatin1String("Data Error in encrypted"), Qt::CaseInsensitive))
             return password.isEmpty() ? QStringLiteral("password") : QStringLiteral("wrong-password");
         const QString line = err.trimmed().section(QLatin1Char('\n'), -1).trimmed();
-        return line.isEmpty() ? QStringLiteral("7z: код %1").arg(p.exitCode()) : QStringLiteral("7z: ") + line;
+        return line.isEmpty() ? glideTr(QStringLiteral("7z: код %1")).arg(p.exitCode()) : QStringLiteral("7z: ") + line;
     }
     return QString();
 }
@@ -331,7 +332,7 @@ static QString extract7z(const QString &path, const QString &password, const QSt
         return QStringLiteral("unsupported-encryption");
     QTemporaryDir tmp(root + QStringLiteral("/.glide-archive-XXXXXX"));
     if (!tmp.isValid())
-        return QStringLiteral("Не удалось создать временную папку в %1").arg(root);
+        return glideTr(QStringLiteral("Не удалось создать временную папку в %1")).arg(root);
     QStringList args{"x", "-y", "-bsp1", "-bso0", "-sccUTF-8", "-o" + tmp.path(), "--", path};
     for (const QString &s : paths)
         args << cleanPath(s);
@@ -342,7 +343,7 @@ static QString extract7z(const QString &path, const QString &password, const QSt
     auto moveOut = [&](const QString &from, const QString &name) -> QString {
         const QString to = uniquePath(root + QLatin1Char('/') + name);
         if (!QFile::rename(from, to))
-            return QStringLiteral("Не удалось перенести %1").arg(name);
+            return glideTr(QStringLiteral("Не удалось перенести %1")).arg(name);
         tops << to;
         return QString();
     };
@@ -528,11 +529,11 @@ QString Archive::extractSync(const QString &path, const QString &password, const
                              std::atomic<bool> *cancel, std::function<void(qreal)> progress)
 {
     if (!QDir().mkpath(dest))
-        return QStringLiteral("Не удалось создать папку %1").arg(dest);
+        return glideTr(QStringLiteral("Не удалось создать папку %1")).arg(dest);
     // настоящий путь папки: SECURE_SYMLINKS не пустит запись через ссылку, в том числе в самом пути
     const QString root = QFileInfo(dest).canonicalFilePath();
     if (root.isEmpty())
-        return QStringLiteral("Нет папки %1").arg(dest);
+        return glideTr(QStringLiteral("Нет папки %1")).arg(dest);
 
     // выбранное распаковывается без пути до него: «a/b/c.txt» из папки «a/b» → «dest/c.txt»
     struct Sel { QString path; int strip; };
@@ -708,7 +709,7 @@ QString Archive::createSync(const QStringList &sources, const QString &out, cons
                             const QString &password, std::atomic<bool> *cancel, std::function<void(qreal)> progress)
 {
     if (sources.isEmpty())
-        return QStringLiteral("Нечего упаковывать");
+        return glideTr(QStringLiteral("Нечего упаковывать"));
     const QString part = out + QStringLiteral(".part");
     const QString outAbs = QFileInfo(out).absoluteFilePath();
 
@@ -719,7 +720,7 @@ QString Archive::createSync(const QStringList &sources, const QString &out, cons
     for (const QString &s : sources) {
         const QFileInfo fi(s);
         if (!fi.exists() && !fi.isSymLink())
-            return QStringLiteral("Нет файла %1").arg(s);
+            return glideTr(QStringLiteral("Нет файла %1")).arg(s);
         QString top = fi.fileName();
         // два источника с одинаковым именем из разных папок
         for (int i = 2; names.contains(top); ++i)
@@ -764,14 +765,14 @@ QString Archive::createSync(const QStringList &sources, const QString &out, cons
         if (format == QLatin1String("tar.zst")) rc = qMin(rc, archive_write_add_filter_zstd(w));
         else if (format == QLatin1String("tar.xz")) rc = qMin(rc, archive_write_add_filter_xz(w));
         else if (format == QLatin1String("tar.gz")) rc = qMin(rc, archive_write_add_filter_gzip(w));
-        else if (format != QLatin1String("tar")) return QStringLiteral("Неизвестный формат: %1").arg(format);
+        else if (format != QLatin1String("tar")) return glideTr(QStringLiteral("Неизвестный формат: %1")).arg(format);
     } else {
-        return QStringLiteral("Неизвестный формат: %1").arg(format);
+        return glideTr(QStringLiteral("Неизвестный формат: %1")).arg(format);
     }
     if (rc != ARCHIVE_OK)
         return errorOf(w);
     if (!password.isEmpty() && format != QLatin1String("zip"))
-        return QStringLiteral("Пароль можно поставить только на zip");
+        return glideTr(QStringLiteral("Пароль можно поставить только на zip"));
 
     QFile::remove(part);
     if (archive_write_open_filename(w, QFile::encodeName(part).constData()) != ARCHIVE_OK)
@@ -831,7 +832,7 @@ QString Archive::createSync(const QStringList &sources, const QString &out, cons
     QFile::remove(out);   // «Сохранить как» уже спросил про замену
     if (!QFile::rename(part, out)) {
         QFile::remove(part);
-        return QStringLiteral("Не удалось записать %1").arg(out);
+        return glideTr(QStringLiteral("Не удалось записать %1")).arg(out);
     }
     if (progress)
         progress(1);
@@ -927,7 +928,7 @@ void Archive::open(const QString &pathOrUrl, const QString &password)
             }
             if (!err.isEmpty()) {
                 emit failed(err == QLatin1String("unsupported-encryption")
-                                ? QStringLiteral("Зашифрованные 7z и RAR пока не открываются")
+                                ? glideTr(QStringLiteral("Зашифрованные 7z и RAR пока не открываются"))
                                 : err);
                 return;
             }
@@ -986,9 +987,9 @@ void Archive::extract(const QStringList &paths, const QString &dest)
             else if (err == QLatin1String("password") || err == QLatin1String("wrong-password"))
                 emit passwordRequired(err == QLatin1String("wrong-password"), true);
             else if (err == QLatin1String("cancelled"))
-                emit failed(QStringLiteral("Распаковка отменена"));
+                emit failed(glideTr(QStringLiteral("Распаковка отменена")));
             else if (err == QLatin1String("unsupported-encryption"))
-                emit failed(QStringLiteral("Зашифрованные 7z и RAR пока не распаковываются"));
+                emit failed(glideTr(QStringLiteral("Зашифрованные 7z и RAR пока не распаковываются")));
             else
                 emit failed(err);
         }, Qt::QueuedConnection);
@@ -1038,7 +1039,7 @@ QString Archive::suggestName(const QStringList &sources, const QString &format) 
     const QFileInfo first(localPath(sources.first()));
     QString base = sources.size() == 1 ? first.fileName() : first.absoluteDir().dirName();
     if (base.isEmpty())
-        base = QStringLiteral("Архив");
+        base = glideTr(QStringLiteral("Архив"));
     return uniquePath(first.absolutePath() + QLatin1Char('/') + base + QLatin1Char('.') + format);
 }
 
@@ -1058,7 +1059,7 @@ void Archive::create(const QStringList &sources, const QString &out, const QStri
             if (err.isEmpty())
                 emit created(target);
             else
-                emit failed(err == QLatin1String("cancelled") ? QStringLiteral("Создание отменено") : err);
+                emit failed(err == QLatin1String("cancelled") ? glideTr(QStringLiteral("Создание отменено")) : err);
         }, Qt::QueuedConnection);
     });
 }

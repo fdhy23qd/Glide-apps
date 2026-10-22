@@ -1,8 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Архивы
-GenericName=Архиватор
-Comment=Открыть, распаковать и создать архив: zip, 7z, rar, tar
+Name=Archives
+Name[ru]=Архивы
+GenericName=Archive Manager
+GenericName[ru]=Архиватор
+Comment=Open, extract and create archives: zip, 7z, rar, tar
+Comment[ru]=Открыть, распаковать и создать архив: zip, 7z, rar, tar
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-archive %F
 Icon=glide-archive
 Terminal=false
@@ -13,5 +16,6 @@ MimeType=application/zip;application/x-7z-compressed;application/vnd.rar;applica
 Actions=extract;
 
 [Desktop Action extract]
-Name=Распаковать сюда
+Name=Extract here
+Name[ru]=Распаковать сюда
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/glide-archive --extract-here %F

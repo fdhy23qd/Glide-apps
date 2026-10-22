@@ -1,4 +1,5 @@
 #include "imageeditor.h"
+#include "glidetr.h"
 
 #include <QBuffer>
 #include <QDir>
@@ -100,7 +101,7 @@ QByteArray encode(const QImage &src, const QString &ext, int quality, QString *e
     QTemporaryDir tmp;
     const QString in = tmp.filePath("in.png"), out = tmp.filePath("out." + ext);
     if (!img.save(in, "PNG", 0)) {   // 0 — без сжатия: быстрее
-        *err = QStringLiteral("не удалось подготовить изображение");
+        *err = glideTr(QStringLiteral("не удалось подготовить изображение"));
         return {};
     }
     QStringList args{"-hide_banner", "-nostdin", "-v", "error", "-y", "-i", in, "-frames:v", "1"};
@@ -115,7 +116,7 @@ QByteArray encode(const QImage &src, const QString &ext, int quality, QString *e
     p.start("ffmpeg", args);
     if (!p.waitForFinished(180000) || p.exitCode() != 0) {
         const QStringList lines = QString::fromUtf8(p.readAllStandardError()).split('\n', Qt::SkipEmptyParts);
-        *err = lines.isEmpty() ? QStringLiteral("ffmpeg не справился") : lines.last();
+        *err = lines.isEmpty() ? glideTr(QStringLiteral("ffmpeg не справился")) : lines.last();
         return {};
     }
     QFile f(out);
@@ -262,12 +263,12 @@ void ImageEditor::save(const QVariantMap &opts)
         }
         if (!data.isEmpty()) {
             const QString dir = src.absolutePath(), name = src.completeBaseName();
-            QString target = replace ? dir + '/' + name + '.' + ext : dir + '/' + name + " (изменено)." + ext;
+            QString target = replace ? dir + '/' + name + '.' + ext : dir + '/' + name + glideTr(" (изменено).") + ext;
             for (int n = 2; QFileInfo::exists(target) && !(replace && target == src.absoluteFilePath()); ++n)
-                target = QStringLiteral("%1/%2 (%3%4).%5").arg(dir, name, replace ? "" : "изменено ").arg(n).arg(ext);
+                target = QStringLiteral("%1/%2 (%3%4).%5").arg(dir, name, replace ? "" : glideTr("изменено ")).arg(n).arg(ext);
             // заменить: оригинал — в корзину (вернуть можно), затем записать новый
             if (replace && !QFile::moveToTrash(path, &inTrash))
-                err = QStringLiteral("не удалось переместить оригинал в корзину");
+                err = glideTr(QStringLiteral("не удалось переместить оригинал в корзину"));
             if (err.isEmpty()) {
                 QSaveFile f(target);
                 if (f.open(QIODevice::WriteOnly) && f.write(data) == data.size() && f.commit()) {
@@ -285,7 +286,7 @@ void ImageEditor::save(const QVariantMap &opts)
             m_saving = false;
             emit busyChanged();
             if (file.isEmpty())
-                emit failed(err.isEmpty() ? QStringLiteral("не удалось сохранить") : err);
+                emit failed(err.isEmpty() ? glideTr(QStringLiteral("не удалось сохранить")) : err);
             else
                 emit saved(file, path, inTrash);
         }, Qt::QueuedConnection);

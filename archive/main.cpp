@@ -3,6 +3,7 @@
 #include <QtQml/qqmlextensionplugin.h>
 
 #include "archiver.h"
+#include "glidetr.h"
 #include "testhook.h"
 
 Q_IMPORT_QML_PLUGIN(Glide_UiPlugin)
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     app.setApplicationName("glide-archive");
-    app.setApplicationDisplayName("Архивы");
+    app.setApplicationDisplayName(glideTr("Архивы"));
     app.setOrganizationName("Glide");
     app.setDesktopFileName("glide-archive");
 

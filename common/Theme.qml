@@ -14,7 +14,12 @@ QtObject {
         soft:   { background: "#161a22", surface: "#212733", surfaceLow: "#262c39", surfaceHigh: "#2a313e",
                   surfaceHigher: "#343c4b", surfacePressed: "#3e4757", outline: "#37445a", divider: "#3d4a5f" }
     })
-    readonly property var t: tones[GlideSettings.tone] || tones.glide
+    // светлая — как в Glide Shell: белые карточки на светло-сером, тёмный текст (те же роли, что у тёмных тонов)
+    readonly property var lightTone: ({ background: "#eef0f4", surface: "#ffffff", surfaceLow: "#f6f7f9", surfaceHigh: "#e8ebf0",
+                                         surfaceHigher: "#dde2e9", surfacePressed: "#d1d7e0", outline: "#d3d9e2", divider: "#c8d0db" })
+    property bool forceDark: false   // плеер и подобное — всегда тёмные (выставляет приложение)
+    readonly property bool isLight: GlideSettings.light && !forceDark
+    readonly property var t: isLight ? lightTone : (tones[GlideSettings.tone] || tones.glide)
 
     readonly property color background: t.background
     readonly property color surface: t.surface
@@ -30,22 +35,22 @@ QtObject {
 
     readonly property real disabledOpacity: 0.38
 
-    readonly property color text: "#f5f7fa"
-    readonly property color textVariant: "#c3cbd6"
-    readonly property color textSecondary: "#9aa5b5"
-    readonly property color textMuted: "#6b7686"
-    readonly property color textFaint: "#4b5563"
+    readonly property color text: isLight ? "#14171c" : "#f5f7fa"
+    readonly property color textVariant: isLight ? "#364050" : "#c3cbd6"
+    readonly property color textSecondary: isLight ? "#5a6473" : "#9aa5b5"
+    readonly property color textMuted: isLight ? "#7f8999" : "#6b7686"
+    readonly property color textFaint: isLight ? "#a3abb8" : "#4b5563"
 
     readonly property color accent: GlideSettings.accent
     readonly property color accentSoft: Qt.rgba(accent.r, accent.g, accent.b, 0.22)
     readonly property color accentHover: Qt.rgba(accent.r, accent.g, accent.b, 0.42)
     readonly property color accentLight: Qt.lighter(accent, 1.12)
     readonly property color accentPressed: Qt.darker(accent, 1.15)
-    readonly property color accentText: 0.299 * accent.r + 0.587 * accent.g + 0.114 * accent.b > 0.62 ? background : "#ffffff"
+    readonly property color accentText: 0.299 * accent.r + 0.587 * accent.g + 0.114 * accent.b > 0.62 ? "#0f1115" : "#ffffff"
 
     readonly property color error: "#ef5b5b"
-    readonly property color errorContainer: "#3a1f24"
-    readonly property color errorHover: "#4a2328"
+    readonly property color errorContainer: isLight ? "#fde4e4" : "#3a1f24"
+    readonly property color errorHover: isLight ? "#fbd2d2" : "#4a2328"
     readonly property color success: "#34c77b"
     readonly property color warning: "#f5a623"
 

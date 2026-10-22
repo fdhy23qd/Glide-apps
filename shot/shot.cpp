@@ -1,4 +1,5 @@
 #include "shot.h"
+#include "glidetr.h"
 
 #include <QBuffer>
 #include <QCoreApplication>
@@ -110,7 +111,7 @@ void Shot::capture(const QString &mode)
         }
     });
     connect(m_events, &QProcess::finished, this, [this] {
-        if (m_events) { stopEvents(); emit failed(QStringLiteral("niri не отвечает")); }
+        if (m_events) { stopEvents(); emit failed(glideTr(QStringLiteral("niri не отвечает"))); }
     });
     m_events->start("niri", {"msg", "--json", "event-stream"});
     m_giveUp.start();
@@ -138,7 +139,7 @@ bool Shot::load(const QString &pathOrUrl)
     r.setAutoTransform(true);
     QImage img = r.read();
     if (img.isNull()) {
-        emit failed(QStringLiteral("Не удалось открыть: %1").arg(QFileInfo(p).fileName()));
+        emit failed(glideTr(QStringLiteral("Не удалось открыть: %1")).arg(QFileInfo(p).fileName()));
         return false;
     }
     m_image = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
@@ -252,9 +253,9 @@ QString Shot::savePath() const
     if (m_fresh)
         return m_path;   // свой свежий снимок — поверх него
     const QFileInfo fi(m_path);
-    QString out = fi.absolutePath() + '/' + fi.completeBaseName() + " (правка).png";
+    QString out = fi.absolutePath() + '/' + fi.completeBaseName() + glideTr(" (правка).png");
     for (int n = 2; QFileInfo::exists(out); ++n)
-        out = QStringLiteral("%1/%2 (правка %3).png").arg(fi.absolutePath(), fi.completeBaseName()).arg(n);
+        out = glideTr(QStringLiteral("%1/%2 (правка %3).png")).arg(fi.absolutePath(), fi.completeBaseName()).arg(n);
     return out;
 }
 
@@ -291,7 +292,7 @@ bool Shot::copy(const QVariantList &items, const QVariantMap &crop)
     QProcess p;
     p.start("wl-copy", {"--type", "image/png"});
     if (!p.waitForStarted(2000)) {
-        emit failed(QStringLiteral("Нет wl-copy (пакет wl-clipboard)"));
+        emit failed(glideTr(QStringLiteral("Нет wl-copy (пакет wl-clipboard)")));
         return false;
     }
     p.write(png);

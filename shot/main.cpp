@@ -3,6 +3,7 @@
 #include <QtQml/qqmlextensionplugin.h>
 
 #include "testhook.h"
+#include "glidetr.h"
 
 Q_IMPORT_QML_PLUGIN(Glide_UiPlugin)
 
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     app.setApplicationName("glide-shot");
-    app.setApplicationDisplayName("Скриншоты");
+    app.setApplicationDisplayName(glideTr("Скриншоты"));
     app.setOrganizationName("Glide");
     app.setDesktopFileName("glide-shot");
 

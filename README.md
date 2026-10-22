@@ -4,18 +4,18 @@
 
 Lightweight everyday apps in the style of [Glide Shell](https://github.com/fdhy23qd/Glide-shell), written in C++ and
 QML on the system Qt 6. They are made to go with the shell: they take its theme (tone, accent colour, corner radius,
-text size) from `~/.config/glide-shell/config.json` and follow it live. They also work on their own and
+text size, light or dark mode) and language from `~/.config/glide-shell/config.json` and follow it live. They also work on their own and
 on any Wayland compositor, but they are designed for niri. Without Glide Shell they use the default Glide look.
 
 | App | Command | What it does |
 |---|---|---|
-| Photos | `glide-photos` | Image viewer with editing: crop, rotate, resize, convert |
+| Photos | `glide-photos` | Image viewer with a folder grid, slideshow and editing: crop, rotate, resize, convert |
 | Video | `glide-video` | Video and audio player with a simple FFmpeg-based editor; MPRIS support |
 | PDF | `glide-pdf` | PDF reader: search, outline, thumbnails, text selection, night mode |
 | Screenshots | `glide-shot` | Capture with niri's own UI and annotate: arrows, boxes, text, steps, blur |
 | Archives | `glide-archive` | Open, extract and create zip, 7z, rar, tar.* and more (libarchive) |
 
-> **The interface is Russian only for now**: these apps do not have a translation yet, unlike Glide Shell.
+> The interface is in English and Russian, like Glide Shell (`lang` in its settings; without it — by `$LANG`).
 > They are a personal project, used daily on Arch Linux with niri.
 
 ![Photos](docs/screenshots/photos.png)

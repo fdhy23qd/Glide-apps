@@ -20,7 +20,7 @@ Window {
     visible: true
     flags: Qt.Window | Qt.FramelessWindowHint
     color: Theme.background
-    title: arc.path ? fileName + " — Архивы" : "Архивы"
+    title: arc.path ? fileName + Tr.t(" — Архивы") : Tr.t("Архивы")
 
     Settings {
         id: prefs
@@ -47,13 +47,13 @@ Window {
         onExtracted: (dest, skipped) => {
             if (win.startMode === "extract-here") { win.nextExtractHere(); return }
             const name = dest.split("/").pop()
-            toast.show((skipped ? "Распаковано, пропущено небезопасных: " + skipped : "Распаковано: " + name),
-                       "Показать", () => arc.showInFolder(dest))
+            toast.show((skipped ? Tr.t("Распаковано, пропущено небезопасных: ") + skipped : Tr.t("Распаковано: ") + name),
+                       Tr.t("Показать"), () => arc.showInFolder(dest))
         }
         onCreated: file => {
             creator.close()
             arc.open(file)
-            toast.show("Архив создан: " + file.split("/").pop(), "Показать", () => arc.showInFolder(file))
+            toast.show(Tr.t("Архив создан: ") + file.split("/").pop(), Tr.t("Показать"), () => arc.showInFolder(file))
         }
         onEntryReady: file => Qt.openUrlExternally("file://" + file)
     }
@@ -73,13 +73,13 @@ Window {
     function folderOf(p) { return p.substring(0, p.lastIndexOf("/")) || "/" }
     function openDialog() {
         picker.purpose = "open"
-        picker.open("Открыть архив", "Архивы", ["*.zip", "*.7z", "*.rar", "*.tar", "*.tar.*", "*.tgz", "*.txz", "*.tzst",
+        picker.open(Tr.t("Открыть архив"), Tr.t("Архивы"), ["*.zip", "*.7z", "*.rar", "*.tar", "*.tar.*", "*.tgz", "*.txz", "*.tzst",
                      "*.gz", "*.xz", "*.zst", "*.bz2", "*.lz4", "*.iso", "*.cab", "*.jar", "*.cbz", "*.cbr"],
                      arc.path ? folderOf(arc.path) : "")
     }
     function pickSources() {
         picker.purpose = "sources"
-        picker.open("Что упаковать", "", [], arc.path ? folderOf(arc.path) : "", true)
+        picker.open(Tr.t("Что упаковать"), "", [], arc.path ? folderOf(arc.path) : "", true)
     }
 
     // ---------- что открыто ----------
@@ -89,7 +89,7 @@ Window {
     }
     function startCreate(urls) {
         const info = arc.sourcesInfo(urls)
-        if (!info.count) { toast.show("Нечего упаковывать"); return }
+        if (!info.count) { toast.show(Tr.t("Нечего упаковывать")); return }
         creator.show(info, arc.suggestName(info.paths, "zip"))
     }
     function raiseUp() { win.visible = true; win.requestActivate() }
@@ -154,7 +154,7 @@ Window {
         if (!arc.path) return
         if (toFolder) {
             picker.purpose = "extract"
-            picker.openFolder("Куда распаковать", folderOf(arc.path))
+            picker.openFolder(Tr.t("Куда распаковать"), folderOf(arc.path))
             return
         }
         const paths = selectedPaths
@@ -192,10 +192,10 @@ Window {
     // ---------- оформление ----------
     function human(b) {
         if (b < 0) return "—"
-        const u = ["Б", "КБ", "МБ", "ГБ", "ТБ"]
+        const u = [Tr.t("Б"), Tr.t("КБ"), Tr.t("МБ"), Tr.t("ГБ"), Tr.t("ТБ")]
         let i = 0
         while (b >= 1024 && i < 4) { b /= 1024; ++i }
-        return (i === 0 ? String(b) : b.toFixed(b < 10 ? 1 : 0).replace(".", ",")) + " " + u[i]
+        return (i === 0 ? String(b) : b.toFixed(b < 10 ? 1 : 0).replace(".", Tr.ru ? "," : ".")) + " " + u[i]
     }
     function plural(n, one, few, many) {
         const m10 = n % 10, m100 = n % 100
@@ -227,7 +227,7 @@ Window {
             x: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
-            IconButton { glyph: 0xF005D; tip: "Наверх  Backspace"; enabled: win.folder !== ""; visible: arc.path !== ""; onClicked: win.up() }
+            IconButton { glyph: 0xF005D; tip: Tr.t("Наверх  Backspace"); enabled: win.folder !== ""; visible: arc.path !== ""; onClicked: win.up() }
         }
         // путь: архив › папка › папка — каждое звено кликабельно
         ListView {
@@ -242,7 +242,7 @@ Window {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             model: {
-                if (!arc.path) return [{ label: "Архивы", path: null }]
+                if (!arc.path) return [{ label: Tr.t("Архивы"), path: null }]
                 const out = [{ label: win.fileName, path: "" }]
                 if (win.folder) {
                     const parts = win.folder.split("/")
@@ -311,15 +311,15 @@ Window {
                 implicitHeight: 36
                 primary: true
                 glyph: 0xF03D4
-                text: win.selectedPaths.length ? (tail.wide ? "Распаковать выбранное" : "Выбранное") : "Распаковать"
+                text: win.selectedPaths.length ? (tail.wide ? Tr.t("Распаковать выбранное") : Tr.t("Выбранное")) : Tr.t("Распаковать")
                 enabled: !arc.busy
                 onClicked: win.extract(false)
             }
-            IconButton { visible: arc.path !== "" && !arc.needsPassword; glyph: 0xF0770; tip: "Распаковать в папку…  Ctrl+Shift+E"; enabled: !arc.busy; onClicked: win.extract(true) }
+            IconButton { visible: arc.path !== "" && !arc.needsPassword; glyph: 0xF0770; tip: Tr.t("Распаковать в папку…  Ctrl+Shift+E"); enabled: !arc.busy; onClicked: win.extract(true) }
             Item { width: 6; height: 1 }
-            IconButton { glyph: 0xF0415; tip: "Новый архив  Ctrl+N"; enabled: !arc.busy; onClicked: win.pickSources() }
-            IconButton { glyph: 0xF003C; tip: "Открыть архив  Ctrl+O"; enabled: !arc.busy; onClicked: win.openDialog() }
-            IconButton { glyph: 0xF0156; tip: "Закрыть  Ctrl+W"; onClicked: win.close() }
+            IconButton { glyph: 0xF0415; tip: Tr.t("Новый архив  Ctrl+N"); enabled: !arc.busy; onClicked: win.pickSources() }
+            IconButton { glyph: 0xF003C; tip: Tr.t("Открыть архив  Ctrl+O"); enabled: !arc.busy; onClicked: win.openDialog() }
+            IconButton { glyph: 0xF0156; tip: Tr.t("Закрыть  Ctrl+W"); onClicked: win.close() }
         }
     }
 
@@ -347,7 +347,7 @@ Window {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Перетащите архив — он откроется,\nили файлы и папки — они упакуются"
+            text: Tr.t("Перетащите архив — он откроется,\nили файлы и папки — они упакуются")
             horizontalAlignment: Text.AlignHCenter
             color: Theme.textSecondary
             font.pixelSize: Theme.fs(14)
@@ -356,8 +356,8 @@ Window {
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 8
-            TextButton { primary: true; glyph: 0xF003C; text: "Открыть архив"; onClicked: win.openDialog() }
-            TextButton { glyph: 0xF0415; text: "Создать архив"; onClicked: win.pickSources() }
+            TextButton { primary: true; glyph: 0xF003C; text: Tr.t("Открыть архив"); onClicked: win.openDialog() }
+            TextButton { glyph: 0xF0415; text: Tr.t("Создать архив"); onClicked: win.pickSources() }
         }
     }
 
@@ -377,11 +377,11 @@ Window {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Даже список файлов этого архива зашифрован"
+            text: Tr.t("Даже список файлов этого архива зашифрован")
             color: Theme.textSecondary
             font.pixelSize: Theme.fs(14)
         }
-        TextButton { anchors.horizontalCenter: parent.horizontalCenter; primary: true; text: "Ввести пароль"; onClicked: password.ask(false, false) }
+        TextButton { anchors.horizontalCenter: parent.horizontalCenter; primary: true; text: Tr.t("Ввести пароль"); onClicked: password.ask(false, false) }
     }
 
     // ---------- список ----------
@@ -392,18 +392,18 @@ Window {
         width: parent.width
         height: 30
         color: Theme.background
-        Text { x: 64; anchors.verticalCenter: parent.verticalCenter; text: "Имя"; color: Theme.textMuted; font.pixelSize: Theme.fs(12) }
+        Text { x: 64; anchors.verticalCenter: parent.verticalCenter; text: Tr.t("Имя"); color: Theme.textMuted; font.pixelSize: Theme.fs(12) }
         Text {
             anchors.right: dateHead.left; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
             width: 96; horizontalAlignment: Text.AlignRight
-            text: "Размер"; color: Theme.textMuted; font.pixelSize: Theme.fs(12)
+            text: Tr.t("Размер"); color: Theme.textMuted; font.pixelSize: Theme.fs(12)
         }
         Text {
             id: dateHead
             visible: win.width > 620
             anchors.right: parent.right; anchors.rightMargin: 24; anchors.verticalCenter: parent.verticalCenter
             width: visible ? 120 : 0
-            text: "Изменён"; color: Theme.textMuted; font.pixelSize: Theme.fs(12)
+            text: Tr.t("Изменён"); color: Theme.textMuted; font.pixelSize: Theme.fs(12)
         }
     }
     ListView {
@@ -501,8 +501,8 @@ Window {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 96
                     horizontalAlignment: Text.AlignRight
-                    text: entryRow.modelData.dir ? win.plural(entryRow.modelData.count || 0, "объект", "объекта", "объектов")
-                                                 : entryRow.modelData.link ? "ссылка" : win.human(entryRow.modelData.size)
+                    text: entryRow.modelData.dir ? win.plural(entryRow.modelData.count || 0, Tr.t("объект"), Tr.t("объекта"), Tr.t("объектов"))
+                                                 : entryRow.modelData.link ? Tr.t("ссылка") : win.human(entryRow.modelData.size)
                     color: Theme.textSecondary
                     font.pixelSize: Theme.fs(13)
                 }
@@ -535,7 +535,7 @@ Window {
         Text {
             visible: list.count === 0 && !arc.busy
             anchors.centerIn: parent
-            text: "Пусто"
+            text: Tr.t("Пусто")
             color: Theme.textMuted
             font.pixelSize: Theme.fs(14)
         }
@@ -559,14 +559,14 @@ Window {
             font.pixelSize: Theme.fs(12)
             text: {
                 if (win.selectedPaths.length)
-                    return "Выбрано: " + win.selectedPaths.length + " · " + win.human(win.selectedSize)
+                    return Tr.t("Выбрано: ") + win.selectedPaths.length + " · " + win.human(win.selectedSize)
                 let files = 0, dirs = 0
                 for (const e of arc.entries) { if (e.dir) ++dirs; else ++files }
-                const parts = [win.plural(files, "файл", "файла", "файлов")]
-                if (dirs) parts.push(win.plural(dirs, "папка", "папки", "папок"))
+                const parts = [win.plural(files, Tr.t("файл"), Tr.t("файла"), Tr.t("файлов"))]
+                if (dirs) parts.push(win.plural(dirs, Tr.t("папка"), Tr.t("папки"), Tr.t("папок")))
                 parts.push(win.human(arc.totalSize))
                 if (arc.format) parts.push(arc.format)
-                if (arc.encrypted) parts.push("зашифрован")
+                if (arc.encrypted) parts.push(Tr.t("зашифрован"))
                 return parts.join(" · ")
             }
         }
@@ -597,7 +597,7 @@ Window {
         z: 80
         Text {
             anchors.centerIn: parent
-            text: creator.open ? "Добавить к упаковке" : "Архив — открыть, файлы — упаковать"
+            text: creator.open ? Tr.t("Добавить к упаковке") : Tr.t("Архив — открыть, файлы — упаковать")
             color: Theme.text
             font.pixelSize: Theme.fs(16)
             font.weight: Font.DemiBold
@@ -612,13 +612,13 @@ Window {
         format: prefs.format
         onFormatChanged: prefs.format = format
         working: arc.busy
-        onPickFolder: { picker.purpose = "dest"; picker.openFolder("Где сохранить архив", creator.folder) }
+        onPickFolder: { picker.purpose = "dest"; picker.openFolder(Tr.t("Где сохранить архив"), creator.folder) }
         onAccepted: (out, fmt, pw) => arc.create(creator.info.paths, out, fmt, pw)
         onAddRequested: urls => creator.info = arc.sourcesInfo(creator.info.paths.concat(urls.map(u => arc.localPath(u))))
         onCancelled: { if (win.startMode === "create" && !arc.path) Qt.quit() }
         homeOf: p => arc.homePath(p)
         humanSize: b => win.human(b)
-        countText: (f, d) => win.plural(f, "файл", "файла", "файлов") + (d ? ", " + win.plural(d, "папка", "папки", "папок") : "")
+        countText: (f, d) => win.plural(f, Tr.t("файл"), Tr.t("файла"), Tr.t("файлов")) + (d ? ", " + win.plural(d, Tr.t("папка"), Tr.t("папки"), Tr.t("папок")) : "")
     }
 
     // ---------- пароль ----------
@@ -668,7 +668,7 @@ Window {
                     Text { anchors.verticalCenter: parent.verticalCenter; text: Theme.icon(0xF033E); color: password.wrong ? Theme.error : Theme.accent; font.family: Theme.iconFont; font.pixelSize: Theme.fs(22) }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: password.wrong ? "Пароль не подошёл" : "Архив защищён паролем"
+                        text: password.wrong ? Tr.t("Пароль не подошёл") : Tr.t("Архив защищён паролем")
                         color: Theme.text
                         font.pixelSize: Theme.fs(16)
                         font.weight: Font.DemiBold
@@ -687,7 +687,7 @@ Window {
                     width: parent.width
                     password: true
                     glyph: 0xF033E
-                    placeholder: "Пароль"
+                    placeholder: Tr.t("Пароль")
                     error: password.wrong && text === ""
                     onAccepted: password.submit()
                     onCancelled: password.close()
@@ -695,8 +695,8 @@ Window {
                 Row {
                     anchors.right: parent.right
                     spacing: 8
-                    TextButton { text: "Отмена"; flat: true; onClicked: password.close() }
-                    TextButton { text: password.forExtract ? "Распаковать" : "Открыть"; primary: true; enabled: pwField.text !== ""; onClicked: password.submit() }
+                    TextButton { text: Tr.t("Отмена"); flat: true; onClicked: password.close() }
+                    TextButton { text: password.forExtract ? Tr.t("Распаковать") : Tr.t("Открыть"); primary: true; enabled: pwField.text !== ""; onClicked: password.submit() }
                 }
             }
         }
@@ -725,7 +725,7 @@ Window {
             border.color: Theme.outline
             Text {
                 x: 20; y: 20
-                text: arc.progress > 0 ? "Работаю…  " + Math.round(arc.progress * 100) + "%" : "Работаю…"
+                text: arc.progress > 0 ? Tr.t("Работаю…  ") + Math.round(arc.progress * 100) + "%" : Tr.t("Работаю…")
                 color: Theme.text
                 font.pixelSize: Theme.fs(15)
                 font.weight: Font.DemiBold
@@ -749,7 +749,7 @@ Window {
                 anchors.bottom: parent.bottom; anchors.bottomMargin: 14
                 implicitHeight: 34
                 flat: true
-                text: "Отмена"
+                text: Tr.t("Отмена")
                 onClicked: arc.cancel()
             }
         }

@@ -19,17 +19,17 @@ Rectangle {
     transform: Translate { x: panel.open ? 0 : 24; Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } } }
 
     function sizeText(b) {
-        if (b < 1024) return b + " Б"
-        if (b < 1048576) return (b / 1024).toFixed(0) + " КБ"
-        return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace(".", ",") + " МБ"
+        if (b < 1024) return b + Tr.t(" Б")
+        if (b < 1048576) return (b / 1024).toFixed(0) + Tr.t(" КБ")
+        return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace(".", Tr.ru ? "," : ".") + Tr.t(" МБ")
     }
     readonly property var i: gallery.info
     readonly property var rows: !i.name ? [] : [
-        ["Размер", i.width + " × " + i.height + " пикс. · " + (i.width * i.height / 1e6).toFixed(1).replace(".", ",") + " Мп"],
-        ["Файл", sizeText(i.bytes) + " · " + (i.format || "?") + (i.animated ? " · анимация" : "")],
-        ["Изменён", Qt.locale("ru_RU").toString(i.modified, "d MMMM yyyy, HH:mm")],
-        ["Папка", gallery.folder],
-        ["В папке", (gallery.index + 1) + " из " + gallery.count]
+        [Tr.t("Размер"), i.width + " × " + i.height + Tr.t(" пикс. · ") + (i.width * i.height / 1e6).toFixed(1).replace(".", Tr.ru ? "," : ".") + Tr.t(" Мп")],
+        [Tr.t("Файл"), sizeText(i.bytes) + " · " + (i.format || "?") + (i.animated ? Tr.t(" · анимация") : "")],
+        [Tr.t("Изменён"), Tr.locale.toString(i.modified, "d MMMM yyyy, HH:mm")],
+        [Tr.t("Папка"), gallery.folder],
+        [Tr.t("В папке"), (gallery.index + 1) + Tr.t(" из ") + gallery.count]
     ]
 
     MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }   // не пропускать щелчки к фото
@@ -45,7 +45,7 @@ Rectangle {
             Text {
                 width: parent.width - 32
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Сведения"
+                text: Tr.t("Сведения")
                 color: Theme.text
                 font.pixelSize: Theme.fs(16)
                 font.weight: Font.DemiBold

@@ -1,4 +1,5 @@
 #include "mpris.h"
+#include "glidetr.h"
 
 #include <QCoreApplication>
 #include <QDBusConnection>
@@ -29,7 +30,7 @@ public:
     explicit MprisRoot(Mpris *m) : QDBusAbstractAdaptor(m), m_m(m) {}
     bool yes() const { return true; }
     bool no() const { return false; }
-    QString identity() const { return QStringLiteral("Glide Видео"); }
+    QString identity() const { return glideTr(QStringLiteral("Glide Видео")); }
     QString desktopEntry() const { return QStringLiteral("glide-video"); }
     QStringList schemes() const { return {"file"}; }
     QStringList mimes() const { return {"video/mp4", "video/x-matroska", "video/webm", "audio/mpeg"}; }

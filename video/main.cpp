@@ -3,6 +3,7 @@
 #include <QtQml/qqmlextensionplugin.h>
 
 #include "testhook.h"
+#include "glidetr.h"
 
 Q_IMPORT_QML_PLUGIN(Glide_UiPlugin)
 
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
     app.setApplicationName("glide-video");
-    app.setApplicationDisplayName("Видео");
+    app.setApplicationDisplayName(glideTr("Видео"));
     app.setOrganizationName("Glide");
     app.setDesktopFileName("glide-video");   // app_id окна — док и niri находят значок
 

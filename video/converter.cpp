@@ -1,4 +1,5 @@
 #include "converter.h"
+#include "glidetr.h"
 
 #include <QDir>
 #include <QFile>
@@ -165,7 +166,7 @@ QString Converter::outputPath(const QVariantMap &o) const
     const QFileInfo in(o.value("input").toString());
     const Format fmt = formatOf(o.value("format").toString(), in.suffix().toLower());
     const bool trimmed = o.value("start").toLongLong() > 0 || o.value("end").toLongLong() > 0;
-    const QString base = in.absolutePath() + '/' + in.completeBaseName() + (trimmed ? " — фрагмент" : "");
+    const QString base = in.absolutePath() + '/' + in.completeBaseName() + (trimmed ? glideTr(" — фрагмент") : "");
     QString out = base + '.' + fmt.ext;
     for (int n = 2; QFileInfo::exists(out) || out == in.absoluteFilePath(); ++n)
         out = QStringLiteral("%1 (%2).%3").arg(base).arg(n).arg(fmt.ext);
@@ -362,7 +363,7 @@ void Converter::onFinished(int code, QProcess::ExitStatus status)
     QString err;
     const QStringList lines = m_stderr.split('\n', Qt::SkipEmptyParts);
     if (!ok)
-        err = lines.isEmpty() ? QStringLiteral("ffmpeg завершился с кодом %1").arg(code) : lines.last().trimmed();
+        err = lines.isEmpty() ? glideTr(QStringLiteral("ffmpeg завершился с кодом %1")).arg(code) : lines.last().trimmed();
     m_progress = ok ? 1 : 0;
     emit progressChanged();
     emit finished(ok, ok ? m_output : QString(), err);
@@ -381,9 +382,9 @@ void Converter::snapshot(const QString &path, qint64 ms)
 {
     const QFileInfo in(path);
     const QString stamp = QTime::fromMSecsSinceStartOfDay(int(ms % 86400000)).toString("HH-mm-ss");
-    QString out = QStringLiteral("%1/%2 — кадр %3.png").arg(in.absolutePath(), in.completeBaseName(), stamp);
+    QString out = glideTr(QStringLiteral("%1/%2 — кадр %3.png")).arg(in.absolutePath(), in.completeBaseName(), stamp);
     for (int n = 2; QFileInfo::exists(out); ++n)
-        out = QStringLiteral("%1/%2 — кадр %3 (%4).png").arg(in.absolutePath(), in.completeBaseName(), stamp).arg(n);
+        out = glideTr(QStringLiteral("%1/%2 — кадр %3 (%4).png")).arg(in.absolutePath(), in.completeBaseName(), stamp).arg(n);
     auto *p = new QProcess(this);
     prepareChild(p);
     connect(p, &QProcess::finished, this, [this, p, out](int code) {
@@ -391,7 +392,7 @@ void Converter::snapshot(const QString &path, qint64 ms)
         if (code == 0 && QFileInfo(out).size() > 0)
             emit snapshotSaved(out);
         else
-            emit failed(QStringLiteral("Не удалось сохранить кадр"));
+            emit failed(glideTr(QStringLiteral("Не удалось сохранить кадр")));
     });
     p->start("ffmpeg", {"-hide_banner", "-nostdin", "-v", "error", "-ss", seconds(ms), "-i", path,
                         "-frames:v", "1", "-update", "1", out});
